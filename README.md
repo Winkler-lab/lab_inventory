@@ -1,37 +1,59 @@
-[README.md](https://github.com/user-attachments/files/28792385/README.md)
+[README.md](https://github.com/user-attachments/files/28803615/README.md)
 # 🧪 Lab Inventory
 
-A lightweight, browser-based inventory tracker for wet lab materials, reagents, and tissue samples. No installation, no database, no server — just open the link and go.
-
-## Features
-
-- **Projects** — organise your work by experiment or project, and assign materials to each
-- **Materials** — track reagents, antibodies, kits, and consumables with stock levels, storage locations, and low-stock alerts
-- **Tissues & Samples** — log frozen samples by type, freezer, and shelf position with a visual freezer map
-- **Change log** — every action is recorded under your name so the team always knows what changed and when
-- **Works on mobile** — designed for quick updates at the bench from your phone
-
-## Access
-
-The tool is password-protected. Contact the lab manager for the access code.
+A shared, real-time lab inventory and experiment tracker for wet lab teams. No installation, no server to manage — just open the link and go.
 
 🔗 **[Open Lab Inventory](https://fatemehahmadi999.github.io/lab_inventory/)**
 
+> Password-protected. Contact the lab manager for the access code.
+
+---
+
+## Features
+
+- **Projects** — organise work by project, assign materials, and filter by user
+- **Experiments** — log experiments with materials used, protocol, results, and next steps; filter by user or search by keyword
+- **Materials** — track reagents, antibodies, kits, plastics, and consumables with stock levels, arrival/expiration dates, storage locations, and automatic low-stock email alerts
+- **Tissues & Samples** — log frozen samples by type, freezer, and shelf position with a visual freezer map
+- **Cell Lines** — track cell line name, passage number, vials in storage, freeze date, and location; one-click thaw and passage increment
+- **Activity Log** — every action is recorded in real time with timestamp and user name
+- **Real-time sync** — all data is shared instantly across all devices and team members
+- **Works on mobile** — designed for quick updates at the bench from your phone
+
+---
+
 ## How to use
 
-1. Enter the access code
-2. Enter your name or initials — all changes will be logged under your name
-3. Use the **Materials** tab to add reagents and consumables
-4. Use the **Projects** tab to group materials by experiment
-5. Use the **Tissues** tab to log and track frozen samples
-6. Hit **Confirm ✓** in the banner at the bottom whenever you make changes to save them
+1. Go to the link above and enter the access code
+2. **First time?** Type your name to register — it gets added to the shared list
+3. **Returning?** Pick your name from the dropdown
+4. Use the tabs to navigate between Projects, Experiments, Materials, Tissues, Cell Lines, and the Activity Log
+5. All changes save automatically and appear for everyone in real time
+
+---
+
+## User management
+
+- To **add a user**: simply register a new name on the login screen
+- To **remove a user**: go to [Firebase Console](https://console.firebase.google.com) → Firestore → `users` collection → delete the document
+
+---
+
+## Low-stock email alerts
+
+When a material drops to or below its low-stock threshold, an automatic email alert is sent to the designated lab members. No action needed — it happens in the background.
+
+---
 
 ## Notes
 
-- Data is stored locally in your browser (`localStorage`) — each device has its own copy
-- Clearing your browser data will erase the inventory on that device
-- This tool is intended for internal lab use only
+- Data is stored in Firebase (Google Cloud) and shared across all devices in real time
+- The app is password-protected but data is not encrypted — do not store sensitive personal data
+- Intended for internal lab use only
+- Free tier limits: Firebase (1 GB storage, 50k reads/day), EmailJS (200 emails/month)
+
+---
 
 ## Tech
 
-Pure HTML/CSS/JavaScript — no frameworks, no dependencies, no backend.
+Single HTML file — HTML, CSS, and JavaScript with no frameworks. Backend powered by Firebase Firestore. Email alerts via EmailJS. Hosted on GitHub Pages.
