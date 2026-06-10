@@ -133,14 +133,34 @@
     <div>
       <div class="login-logo">Lab Inventory</div>
       <div class="login-title">Who are you?</div>
-      <div class="login-sub" style="margin-top:6px">All changes will be logged under your name.</div>
+      <div class="login-sub" style="margin-top:6px">Select your name or register for the first time.</div>
     </div>
     <div class="card" style="display:flex;flex-direction:column;gap:1rem">
-      <div class="field">
-        <label>Name or initials</label>
-        <input type="text" id="username-input" placeholder="e.g. Fatemeh A." autocomplete="name" onkeydown="if(event.key==='Enter')proceedFromUser()" />
+      <!-- Returning user -->
+      <div id="user-select-wrap" style="display:none">
+        <div class="field">
+          <label>Select your name</label>
+          <select id="username-select" style="font-size:15px">
+            <option value="">— choose —</option>
+          </select>
+        </div>
+        <button class="btn-primary" style="margin-top:0.75rem" onclick="proceedFromUser()">Continue →</button>
+        <div style="text-align:center;margin-top:0.75rem">
+          <span style="font-size:13px;color:var(--text3)">Not listed? </span>
+          <button onclick="showNewUserForm()" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;font-weight:500">Register new name</button>
+        </div>
       </div>
-      <button class="btn-primary" onclick="proceedFromUser()">Continue →</button>
+      <!-- New user -->
+      <div id="user-new-wrap">
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" id="username-input" placeholder="e.g. Fatemeh A." autocomplete="name" onkeydown="if(event.key==='Enter')registerAndProceed()" />
+        </div>
+        <button class="btn-primary" style="margin-top:0.75rem" onclick="registerAndProceed()">Register &amp; continue →</button>
+        <div id="back-to-select-wrap" style="text-align:center;margin-top:0.75rem;display:none">
+          <button onclick="showSelectForm()" style="background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;font-weight:500">← Back to list</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -156,10 +176,10 @@
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('projects')">Projects</div>
+    <div class="tab" onclick="switchTab('experiments')">Experiments</div>
     <div class="tab" onclick="switchTab('materials')">Materials</div>
     <div class="tab" onclick="switchTab('tissues')">Tissues</div>
     <div class="tab" onclick="switchTab('celllines')">Cell Lines</div>
-    <div class="tab" onclick="switchTab('experiments')">Experiments</div>
     <div class="tab" onclick="switchTab('activitylog')">Log</div>
   </div>
 
@@ -356,9 +376,10 @@
       <div class="field"><label>Experiment title</label><input type="text" id="exp-title" placeholder="e.g. PDX14 staining panel 1" /></div>
       <div class="field-row">
         <div class="field"><label>Date</label><input type="date" id="exp-date" /></div>
-        <div class="field"><label>Project (optional)</label>
-          <select id="exp-project"><option value="">— none —</option></select>
-        </div>
+        <div class="field"><label>Performed by</label><input type="text" id="exp-user" placeholder="Your name" /></div>
+      </div>
+      <div class="field"><label>Project (optional)</label>
+        <select id="exp-project"><option value="">— none —</option></select>
       </div>
       <div class="field">
         <label>Materials used</label>
@@ -510,13 +531,52 @@ function showScreen(id) {
 const ACCESS_CODE = 'wj2026';
 window.checkPassword = function() {
   const val = document.getElementById('password-input').value;
-  if (val === ACCESS_CODE) { showScreen('screen-user'); document.getElementById('password-error').style.display = 'none'; }
+  if (val === ACCESS_CODE) { showScreen('screen-user'); document.getElementById('password-error').style.display = 'none'; loadUsers(); }
   else { document.getElementById('password-error').style.display = 'block'; document.getElementById('password-input').value = ''; document.getElementById('password-input').focus(); }
 };
 
-window.proceedFromUser = function() {
+// ── User management ──────────────────────────────────────────────────────────
+async function loadUsers() {
+  try {
+    const { getDocs } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap = await getDocs(collection(db, 'users'));
+    const users = snap.docs.map(d => d.data().name).sort();
+    const sel = document.getElementById('username-select');
+    sel.innerHTML = '<option value="">— choose —</option>' + users.map(u => `<option value="${u}">${u}</option>`).join('');
+    if (users.length > 0) {
+      document.getElementById('user-select-wrap').style.display = 'block';
+      document.getElementById('user-new-wrap').style.display = 'none';
+      document.getElementById('back-to-select-wrap').style.display = 'block';
+    }
+  } catch(e) { console.error(e); }
+}
+
+window.showNewUserForm = function() {
+  document.getElementById('user-select-wrap').style.display = 'none';
+  document.getElementById('user-new-wrap').style.display = 'block';
+  document.getElementById('username-input').focus();
+};
+
+window.showSelectForm = function() {
+  document.getElementById('user-select-wrap').style.display = 'block';
+  document.getElementById('user-new-wrap').style.display = 'none';
+};
+
+window.registerAndProceed = async function() {
   const name = document.getElementById('username-input').value.trim();
   if (!name) { document.getElementById('username-input').focus(); return; }
+  await saveDoc('users', name.toLowerCase().replace(/\s+/g,'_'), { name });
+  document.getElementById('username-input').value = '';
+  enterApp(name);
+};
+
+window.proceedFromUser = function() {
+  const name = document.getElementById('username-select').value;
+  if (!name) { document.getElementById('username-select').focus(); return; }
+  enterApp(name);
+};
+
+function enterApp(name) {
   currentUser = name;
   const parts = name.split(' ');
   const initials = parts.length >= 2 ? (parts[0][0]+parts[1][0]).toUpperCase() : name.slice(0,2).toUpperCase();
@@ -524,7 +584,7 @@ window.proceedFromUser = function() {
   document.getElementById('user-display').textContent = name;
   showScreen('screen-main');
   startListeners();
-};
+}
 
 window.switchTab = function(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -537,7 +597,7 @@ window.switchTab = function(name) {
 // ── Modals ────────────────────────────────────────────────────────────────────
 window.openModal = function(id) {
   if (id === 'modal-add-project') populateMaterialCheckboxes();
-  if (id === 'modal-add-experiment') { populateExpProjectSelect(); populateExpMaterialRows(); }
+  if (id === 'modal-add-experiment') { populateExpProjectSelect(); populateExpMaterialRows(); populateExpPerformer(); }
   document.getElementById(id).style.display = 'flex';
 };
 window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; };
@@ -849,6 +909,11 @@ window.deleteCellLine = function(id) {
 };
 
 // ── Experiments ───────────────────────────────────────────────────────────────
+function populateExpPerformer() {
+  const f = document.getElementById('exp-user');
+  if (f && !f.value) f.value = currentUser;
+}
+
 function populateExpProjectSelect() {
   const sel = document.getElementById('exp-project');
   sel.innerHTML = '<option value="">— none —</option>' + state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
@@ -884,7 +949,7 @@ window.addExperiment = async function() {
     id: Date.now()+'',
     title,
     date: document.getElementById('exp-date').value,
-    user: currentUser,
+    user: document.getElementById('exp-user').value.trim() || currentUser,
     projectId: projId,
     projectName: projName,
     materials: matRows,
@@ -895,7 +960,7 @@ window.addExperiment = async function() {
   };
   await saveDoc('experiments', exp.id, exp);
   closeModal('modal-add-experiment');
-  ['exp-title','exp-date','exp-protocol','exp-result','exp-next','exp-notes'].forEach(id => document.getElementById(id).value = '');
+  ['exp-title','exp-date','exp-user','exp-protocol','exp-result','exp-next','exp-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('exp-material-rows').innerHTML = '';
   await markChange(`Logged experiment "${title}"`);
 };
