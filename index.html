@@ -255,6 +255,18 @@
     <div id="experiments-list"><div class="empty">No experiments yet.</div></div>
   </div>
 
+  <!-- PDX MODELS TAB -->
+  <div class="tab-content" id="tab-pdxmodels">
+    <div class="section-header">
+      <div class="section-title">PDX Models</div>
+      <button class="btn-add" onclick="openModal('modal-add-pdx')">＋ Add PDX model</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="pdx-filter-search" placeholder="Search by model name, ID…" oninput="renderPDXModels()" style="flex:1" />
+    </div>
+    <div id="pdxmodels-list"><div class="empty">No PDX models yet.</div></div>
+  </div>
+
   <div class="tab-content" id="tab-activitylog" style="display:none"><div id="log-list"></div></div>
 </div>
 
