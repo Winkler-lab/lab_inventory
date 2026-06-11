@@ -730,7 +730,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
+const storage = getStorage(app, "gs://lab-inventory-9dddc.firebasestorage.app");
 
 // ── Storage bucket ───────────────────────────────────────────────────────────
 // Remember to set Firebase Storage rules to: allow read, write: if true;
