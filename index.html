@@ -960,10 +960,24 @@ window.addExperiment = async function() {
     notes: document.getElementById('exp-notes').value.trim()
   };
   await saveDoc('experiments', exp.id, exp);
+
+  // Auto-subtract materials from stock
+  for (const m of matRows) {
+    if (m.amount <= 0) continue;
+    const mat = state.materials.find(x => x.id === m.id);
+    if (!mat) continue;
+    const prev = mat.stock;
+    mat.stock = Math.max(0, parseFloat((mat.stock - m.amount).toFixed(4)));
+    mat.log = mat.log || [];
+    mat.log.unshift({ ts: new Date().toLocaleString(), user: exp.user, action: 'consume', amount: m.amount, note: `Experiment: ${title}` });
+    await saveDoc('materials', mat.id, mat);
+    if (mat.stock <= mat.lowAt) sendLowStockAlert(mat);
+  }
+
   closeModal('modal-add-experiment');
   ['exp-title','exp-date','exp-user','exp-protocol','exp-result','exp-next','exp-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('exp-material-rows').innerHTML = '';
-  await markChange(`Logged experiment "${title}"`);
+  await markChange(`Logged experiment "${title}" — stock updated for ${matRows.length} material(s)`);
 };
 
 function renderExperiments() {
