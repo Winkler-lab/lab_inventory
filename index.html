@@ -1455,20 +1455,34 @@ async function uploadPendingFiles(containerId, storagePath) {
   const files = pendingFiles[containerId] || [];
   if (files.length === 0) return [];
   const results = [];
+  showToast('Uploading files…');
   for (const {file, name} of files) {
-    const safeName = Date.now() + '_' + name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storageRef = ref(storage, `${storagePath}/${safeName}`);
-    await new Promise((resolve, reject) => {
-      const task = uploadBytesResumable(storageRef, file);
-      task.on('state_changed', null, reject, async () => {
-        const url = await getDownloadURL(task.snapshot.ref);
-        results.push({ name, url, path: `${storagePath}/${safeName}` });
-        resolve();
+    try {
+      const safeName = Date.now() + '_' + name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const storageRef = ref(storage, `${storagePath}/${safeName}`);
+      await new Promise((resolve, reject) => {
+        const task = uploadBytesResumable(storageRef, file);
+        task.on('state_changed', null, reject, async () => {
+          try {
+            const url = await getDownloadURL(task.snapshot.ref);
+            results.push({ name, url, path: `${storagePath}/${safeName}` });
+            resolve();
+          } catch(err) {
+            console.error('getDownloadURL failed:', err);
+            showToast('Upload error: ' + err.message);
+            reject(err);
+          }
+        });
       });
-    });
+    } catch(err) {
+      console.error('Upload failed for', name, err);
+      showToast('Upload failed: ' + err.message);
+    }
   }
   pendingFiles[containerId] = [];
-  document.getElementById(containerId).innerHTML = '';
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = '';
+  if (results.length > 0) showToast(results.length + ' file(s) uploaded ✓');
   return results;
 }
 
