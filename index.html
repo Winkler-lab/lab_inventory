@@ -103,7 +103,17 @@
   .sep { height: 0.5px; background: var(--border); margin: 10px 0; }
   .tag { display: inline-block; font-size: 11px; border-radius: 4px; padding: 2px 7px; font-weight: 500; background: var(--surface2); color: var(--text2); margin-right: 4px; }
   .exp-section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin: 10px 0 4px; }
+  .rte-wrap { border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); overflow: hidden; }
+  .rte-toolbar { display: flex; gap: 2px; padding: 4px 6px; background: var(--surface2); border-bottom: 0.5px solid var(--border); flex-wrap: wrap; }
+  .rte-btn { background: none; border: none; border-radius: 4px; padding: 4px 7px; font-size: 13px; cursor: pointer; color: var(--text2); }
+  .rte-btn:hover { background: var(--border); color: var(--text); }
+  .rte-editor { min-height: 80px; padding: 10px 12px; outline: none; font-size: 14px; color: var(--text); background: var(--surface2); line-height: 1.6; }
+  .rte-editor ul, .rte-editor ol { padding-left: 20px; margin: 4px 0; }
+  .rte-editor li { margin: 2px 0; }
+  .rte-editor b, .rte-editor strong { font-weight: 600; }
+  .rte-editor i, .rte-editor em { font-style: italic; }
   .result-box { background: var(--accent-light); border-left: 3px solid var(--accent); padding: 8px 10px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 13px; color: var(--accent-text); margin-top: 6px; }
+  .rte-editor:empty:before { content: attr(data-placeholder); color: var(--text3); pointer-events: none; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
@@ -524,9 +534,46 @@
         <div id="exp-material-rows" style="display:flex;flex-direction:column;gap:6px"></div>
         <button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addExpMaterialRow()">＋ Add material</button>
       </div>
-      <div class="field"><label>Protocol / method</label><textarea id="exp-protocol" placeholder="Brief description of the protocol used..."></textarea></div>
-      <div class="field"><label>Result</label><textarea id="exp-result" placeholder="What happened? Key observations..."></textarea></div>
-      <div class="field"><label>Next steps</label><textarea id="exp-next" placeholder="Follow-up actions, repeats needed..."></textarea></div>
+      <div class="field">
+        <label>Protocol / method</label>
+        <div class="rte-wrap">
+          <div class="rte-toolbar" onmousedown="event.preventDefault()">
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-protocol','bold')" title="Bold"><b>B</b></button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-protocol','italic')" title="Italic"><i>I</i></button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-protocol','insertUnorderedList')" title="Bullet list">• List</button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-protocol','insertOrderedList')" title="Numbered list">1. List</button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-protocol','heading')" title="Heading">H</button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-protocol','clearFormat')" title="Clear format">✕</button>
+          </div>
+          <div class="rte-editor" id="exp-protocol" contenteditable="true" data-placeholder="Brief description of the protocol used..."></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Result</label>
+        <div class="rte-wrap">
+          <div class="rte-toolbar" onmousedown="event.preventDefault()">
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-result','bold')" title="Bold"><b>B</b></button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-result','italic')" title="Italic"><i>I</i></button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-result','insertUnorderedList')" title="Bullet list">• List</button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-result','insertOrderedList')" title="Numbered list">1. List</button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-result','clearFormat')" title="Clear format">✕</button>
+          </div>
+          <div class="rte-editor" id="exp-result" contenteditable="true" data-placeholder="What happened? Key observations..."></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Next steps</label>
+        <div class="rte-wrap">
+          <div class="rte-toolbar" onmousedown="event.preventDefault()">
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-next','bold')" title="Bold"><b>B</b></button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-next','italic')" title="Italic"><i>I</i></button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-next','insertUnorderedList')" title="Bullet list">• List</button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-next','insertOrderedList')" title="Numbered list">1. List</button>
+            <button type="button" class="rte-btn" onclick="rteCmd('exp-next','clearFormat')" title="Clear format">✕</button>
+          </div>
+          <div class="rte-editor" id="exp-next" contenteditable="true" data-placeholder="Follow-up actions, repeats needed..."></div>
+        </div>
+      </div>
       <div class="field"><label>Notes</label><textarea id="exp-notes" placeholder="Any other relevant info..."></textarea></div>
       <div class="field"><label>📎 Attachments</label><div id="exp-drive-links" style="display:flex;flex-direction:column;gap:6px"></div><button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addDriveLinkRow('exp-drive-links')">＋ Attach file</button></div>
     </div>
@@ -624,6 +671,50 @@
 </div>
 
 <script type="module">
+// ── Rich text editor ─────────────────────────────────────────────────────────
+window.rteCmd = function(id, cmd, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.focus();
+  if (cmd === 'heading') {
+    // Wrap selected text or current line in <h4>
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      const selectedText = range.toString();
+      if (selectedText) {
+        const h = document.createElement('h4');
+        h.style.cssText = 'font-size:14px;font-weight:600;margin:6px 0 2px;color:var(--text)';
+        range.surroundContents(h);
+      }
+    }
+  } else if (cmd === 'clearFormat') {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      const text = range.toString();
+      if (text) {
+        range.deleteContents();
+        range.insertNode(document.createTextNode(text));
+      }
+    }
+  } else {
+    document.execCommand(cmd, false, val||null);
+  }
+};
+window.rteGet = function(id) {
+  const el = document.getElementById(id);
+  return el ? el.innerHTML : '';
+};
+window.rteSet = function(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html||'';
+};
+window.rteClear = function(id) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = '';
+};
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
@@ -1437,9 +1528,9 @@ window.addExperiment = async function() {
     projectId: projId,
     projectName: projName,
     materials: matRows,
-    protocol: document.getElementById('exp-protocol').value.trim(),
-    result: document.getElementById('exp-result').value.trim(),
-    next: document.getElementById('exp-next').value.trim(),
+    protocol: window.rteGet('exp-protocol'),
+    result: window.rteGet('exp-result'),
+    next: window.rteGet('exp-next'),
     notes: document.getElementById('exp-notes').value.trim(),
     driveLinks: collectDriveLinks('exp-drive-links')
   };
@@ -1462,7 +1553,8 @@ window.addExperiment = async function() {
   }
 
   closeModal('modal-add-experiment');
-  ['exp-title','exp-date','exp-user','exp-protocol','exp-result','exp-next','exp-notes'].forEach(id => document.getElementById(id).value = '');
+  ['exp-title','exp-date','exp-user','exp-notes'].forEach(id => document.getElementById(id).value = '');
+  ['exp-protocol','exp-result','exp-next'].forEach(id => window.rteClear(id));
   document.getElementById('exp-material-rows').innerHTML = '';
   document.getElementById('exp-drive-links').innerHTML = '';
   await markChange(`Logged experiment "${title}" — stock updated for ${matRows.length} material(s)`);
@@ -1502,9 +1594,9 @@ window.renderExperiments = function() {
       </div>
       <div class="item-card-body" id="exp-${e.id}">
         ${matList?`<div style="margin-bottom:10px"><div class="exp-section-label">Materials used</div><div style="margin-top:4px">${matList}</div></div>`:''}
-        ${e.protocol?`<div style="margin-bottom:10px"><div class="exp-section-label">Protocol</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${e.protocol}</div></div>`:''}
-        ${e.result?`<div style="margin-bottom:10px"><div class="exp-section-label">Result</div><div class="result-box">${e.result}</div></div>`:''}
-        ${e.next?`<div style="margin-bottom:10px"><div class="exp-section-label">Next steps</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${e.next}</div></div>`:''}
+        ${e.protocol?`<div style="margin-bottom:10px"><div class="exp-section-label">Protocol</div><div style="font-size:13px;color:var(--text2);margin-top:4px;line-height:1.6">${e.protocol}</div></div>`:''}
+        ${e.result?`<div style="margin-bottom:10px"><div class="exp-section-label">Result</div><div class="result-box" style="line-height:1.6">${e.result}</div></div>`:''}
+        ${e.next?`<div style="margin-bottom:10px"><div class="exp-section-label">Next steps</div><div style="font-size:13px;color:var(--text2);margin-top:4px;line-height:1.6">${e.next}</div></div>`:''}
         ${e.notes?`<div style="margin-bottom:10px"><div class="exp-section-label">Notes</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${e.notes}</div></div>`:''}
         ${e.activityLog&&e.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${e.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
         ${renderDriveLinks(e.driveLinks)}
@@ -1731,9 +1823,9 @@ window.editExperiment = function(id) {
   document.getElementById('exp-title').value = e.title||'';
   document.getElementById('exp-date').value = e.date||'';
   document.getElementById('exp-user').value = e.user||'';
-  document.getElementById('exp-protocol').value = e.protocol||'';
-  document.getElementById('exp-result').value = e.result||'';
-  document.getElementById('exp-next').value = e.next||'';
+  window.rteSet('exp-protocol', e.protocol||'');
+  window.rteSet('exp-result', e.result||'');
+  window.rteSet('exp-next', e.next||'');
   document.getElementById('exp-notes').value = e.notes||'';
   populateExpProjectSelect();
   document.getElementById('exp-project').value = e.projectId||'';
@@ -1744,9 +1836,9 @@ window.editExperiment = function(id) {
     e.title = document.getElementById('exp-title').value.trim();
     e.date = document.getElementById('exp-date').value;
     e.user = document.getElementById('exp-user').value.trim()||currentUser;
-    e.protocol = document.getElementById('exp-protocol').value.trim();
-    e.result = document.getElementById('exp-result').value.trim();
-    e.next = document.getElementById('exp-next').value.trim();
+    e.protocol = window.rteGet('exp-protocol');
+    e.result = window.rteGet('exp-result');
+    e.next = window.rteGet('exp-next');
     e.notes = document.getElementById('exp-notes').value.trim();
     const projId = document.getElementById('exp-project').value;
     e.projectId = projId;
@@ -1943,7 +2035,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('tis-date').valueAsDate = new Date();
   document.getElementById('exp-date').valueAsDate = new Date();
   document.querySelectorAll('.modal-backdrop').forEach(b => {
-    b.addEventListener('click', (e) => { if (e.target === b) b.style.display = 'none'; });
+    b.addEventListener('mousedown', (e) => { if (e.target === b) b.style.display = 'none'; });
   });
 });
 </script>
