@@ -774,7 +774,7 @@ window.addProject = async function() {
   await markChange(`Created project "${name}"`);
 };
 
-function renderProjects() {
+window.renderProjects = function() {
   const el = document.getElementById('projects-list');
   if (!el) return;
   const filterUser = document.getElementById('proj-filter-user')?.value || '';
@@ -890,7 +890,7 @@ function stockBadge(mat) {
   return '<span class="badge badge-ok">In stock</span>';
 }
 
-function renderMaterials() {
+window.renderMaterials = function() {
   const el = document.getElementById('materials-list');
   if (!el) return;
   const filterCat = document.getElementById('mat-filter-cat')?.value || '';
@@ -1332,7 +1332,7 @@ window.addExperiment = async function() {
   await markChange(`Logged experiment "${title}" — stock updated for ${matRows.length} material(s)`);
 };
 
-function renderExperiments() {
+window.renderExperiments = function() {
   const el = document.getElementById('experiments-list');
   if (!el) return;
   const filterUser = document.getElementById('exp-filter-user')?.value||'';
