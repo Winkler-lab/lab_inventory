@@ -1022,7 +1022,7 @@ window.renderProjects = function() {
         ${(p.pdxIds&&p.pdxIds.length)?`<div class="exp-section-label" style="margin-top:10px">PDX models</div>${p.pdxIds.map(id=>{const m=state.pdxmodels.find(x=>x.id===id);return m?`<div style="font-size:13px;color:var(--text2);padding:3px 0">${m.name}${m.origName?' ('+m.origName+')':''}</div>`:'';}).join('')}`:''}
         ${(p.tissueIds&&p.tissueIds.length)?`<div class="exp-section-label" style="margin-top:10px">Tissue samples</div>${p.tissueIds.map(id=>{const m=state.tissues.find(x=>x.id===id);return m?`<div style="font-size:13px;color:var(--text2);padding:3px 0">${m.name} · ${m.type} (${m.qty} aliquots)</div>`:'';}).join('')}`:''}
         ${(p.celllineIds&&p.celllineIds.length)?`<div class="exp-section-label" style="margin-top:10px">Cell lines</div>${p.celllineIds.map(id=>{const m=state.celllines.find(x=>x.id===id);return m?`<div style="font-size:13px;color:var(--text2);padding:3px 0">${m.name} P${m.passage}</div>`:'';}).join('')}`:''}
-        ${renderDriveLinks(p.driveLinks)}
+        ${renderDriveLinks(p.driveLinks, {collection:'projects', docId:p.id})}
         ${p.activityLog&&p.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${p.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
         <div class="action-row" style="margin-top:10px">
           <button class="btn-sm" onclick="editProjectMaterials('${p.id}')">Edit materials</button>
@@ -1169,7 +1169,7 @@ window.renderMaterials = function() {
           ${m.link?`<div style="grid-column:1/-1"><a href="${m.link}" target="_blank" style="color:var(--accent);font-size:12px">🔗 Product datasheet</a></div>`:''}
         </div>` : ''}
         ${logs ? `<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${logs}</div>` : ''}
-        ${renderDriveLinks(m.driveLinks)}
+        ${renderDriveLinks(m.driveLinks, {collection:'materials', docId:m.id})}
         <div class="action-row">
           <button class="btn-sm primary" onclick="openUseMaterial('${m.id}')">Update stock</button>
           <button class="btn-sm" onclick="editMaterial('${m.id}')">Edit</button>
@@ -1238,7 +1238,7 @@ function renderTissues() {
         ${s.date?`<div style="font-size:13px;color:var(--text2);margin-bottom:8px">Frozen: ${s.date}</div>`:''}
         ${s.notes?`<div style="font-size:13px;color:var(--text2);margin-bottom:8px">${s.notes}</div>`:''}
         ${s.activityLog&&s.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${s.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
-        ${renderDriveLinks(s.driveLinks)}
+        ${renderDriveLinks(s.driveLinks, {collection:'tissues', docId:s.id})}
         <div class="action-row">
           <button class="btn-sm danger" onclick="decrementTissue('${s.id}')">Use 1 aliquot</button>
           <button class="btn-sm" onclick="editTissue('${s.id}')">Edit</button>
@@ -1343,7 +1343,7 @@ function renderCellLines() {
         </div>
         ${cl.notes?`<div style="font-size:13px;color:var(--text2);margin-bottom:10px">${cl.notes}</div>`:''}
         ${cl.activityLog&&cl.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${cl.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
-        ${renderDriveLinks(cl.driveLinks)}
+        ${renderDriveLinks(cl.driveLinks, {collection:'celllines', docId:cl.id})}
         <div class="action-row">
           <button class="btn-sm" onclick="thawCellLine('${cl.id}')">Thaw 1 vial</button>
           <button class="btn-sm" onclick="passageCellLine('${cl.id}')">Passage +1</button>
@@ -1426,40 +1426,45 @@ const pendingFiles = {};
 window.addDriveLinkRow = function(containerId) {
   if (!pendingFiles[containerId]) pendingFiles[containerId] = [];
   const wrap = document.getElementById(containerId);
-  // Create a visible file input that stays in the DOM
-  const row = document.createElement('div');
-  row.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+  // Hidden file input — we trigger it programmatically
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt';
   input.multiple = true;
-  input.style.cssText = 'font-size:13px;color:var(--text2);width:100%;';
+  input.style.display = 'none';
   input.addEventListener('change', () => {
     [...input.files].forEach(file => {
       if (!pendingFiles[containerId]) pendingFiles[containerId] = [];
-      // avoid duplicates
+      // avoid duplicates by name
       if (!pendingFiles[containerId].find(f => f.name === file.name)) {
         pendingFiles[containerId].push({ file, name: file.name });
       }
     });
-    // Show selected files
-    const preview = row.querySelector('.file-preview');
-    if (preview) preview.remove();
-    const prev = document.createElement('div');
-    prev.className = 'file-preview';
-    prev.style.cssText = 'display:flex;flex-direction:column;gap:4px;';
-    prev.innerHTML = [...input.files].map(f =>
-      `<div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:5px 10px;font-size:13px;color:var(--text2)">📄 ${f.name} <span style="color:var(--text3);font-size:11px">${(f.size/1024).toFixed(0)} KB</span></div>`
-    ).join('');
-    row.appendChild(prev);
+    renderPendingFiles(containerId);
+    input.value = ''; // reset so same file can be re-added after removal
   });
-  row.appendChild(input);
-  wrap.appendChild(row);
+  document.body.appendChild(input);
+  input.click();
 };
+
+function renderPendingFiles(containerId) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  // Remove existing pending-file previews
+  wrap.querySelectorAll('.pending-file-row').forEach(el => el.remove());
+  const files = pendingFiles[containerId] || [];
+  files.forEach(({ file, name }) => {
+    const row = document.createElement('div');
+    row.className = 'pending-file-row';
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:5px 10px;font-size:13px;color:var(--text2);';
+    row.innerHTML = `<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ${name}</span><span style="color:var(--text3);font-size:11px;white-space:nowrap">${(file.size/1024).toFixed(0)} KB</span><button type="button" title="Remove" onclick="removePendingFile('${containerId}','${name.replace(/'/g,"\\'")}',this.parentElement)" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;flex-shrink:0">×</button>`;
+    wrap.appendChild(row);
+  });
+}
 
 window.removePendingFile = function(containerId, name, el) {
   if (pendingFiles[containerId]) pendingFiles[containerId] = pendingFiles[containerId].filter(f => f.name !== name);
-  el.remove();
+  if (el) el.remove();
 };
 
 async function uploadPendingFiles(containerId, storagePath) {
@@ -1512,14 +1517,37 @@ async function uploadPendingFiles(containerId, storagePath) {
 
 function collectDriveLinks(containerId) { return []; } // kept for compatibility
 
-function renderDriveLinks(links) {
+function renderDriveLinks(links, { collection: col, docId } = {}) {
   if (!links || links.length === 0) return '';
-  return `<div style="margin-top:8px"><div class="exp-section-label">📎 Attachments</div><div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">${links.map(l => {
+  const canDelete = col && docId;
+  return `<div style="margin-top:8px"><div class="exp-section-label">📎 Attachments</div><div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">${links.map((l, i) => {
     const name = l.name || l;
     const url = l.url || l;
-    return `<a href="${url}" target="_blank" rel="noopener" style="font-size:13px;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:6px;padding:4px 0">📄 ${name}</a>`;
+    const path = l.path || '';
+    const deleteBtn = canDelete
+      ? `<button type="button" title="Remove attachment" onclick="deleteAttachment('${col}','${docId}',${i},'${path.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;flex-shrink:0" title="Remove">×</button>`
+      : '';
+    return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0">
+      <a href="${url}" target="_blank" rel="noopener" style="font-size:13px;color:var(--accent);text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ${name}</a>
+      <a href="${url}" target="_blank" rel="noopener" title="Open file" style="font-size:13px;color:var(--text3);text-decoration:none;flex-shrink:0">↗</a>
+      ${deleteBtn}
+    </div>`;
   }).join('')}</div></div>`;
 }
+
+window.deleteAttachment = async function(col, docId, index, storagePath) {
+  const colState = state[col];
+  if (!colState) return;
+  const item = colState.find(x => x.id === docId);
+  if (!item || !item.driveLinks) return;
+  // Delete from Firebase Storage if path exists
+  if (storagePath) {
+    try { await deleteObject(ref(storage, storagePath)); } catch(e) { console.warn('Storage delete failed (file may already be gone):', e.message); }
+  }
+  item.driveLinks = item.driveLinks.filter((_, i) => i !== index);
+  await saveDoc(col, docId, item);
+  await markChange(`Removed attachment from record`);
+};
 
 window.addExpMaterialRow = function() {
   const wrap = document.getElementById('exp-material-rows');
@@ -1637,7 +1665,7 @@ window.renderExperiments = function() {
         ${e.next?`<div style="margin-bottom:10px"><div class="exp-section-label">Next steps</div><div style="font-size:13px;color:var(--text2);margin-top:4px;line-height:1.6">${e.next}</div></div>`:''}
         ${e.notes?`<div style="margin-bottom:10px"><div class="exp-section-label">Notes</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${e.notes}</div></div>`:''}
         ${e.activityLog&&e.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${e.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
-        ${renderDriveLinks(e.driveLinks)}
+        ${renderDriveLinks(e.driveLinks, {collection:'experiments', docId:e.id})}
         <div class="action-row">
           <button class="btn-sm" onclick="editExperiment('${e.id}')">Edit</button>
           <button class="btn-sm danger" onclick="deleteExperiment('${e.id}')">Delete</button>
@@ -1739,7 +1767,7 @@ window.renderPDXModels = function() {
         ${allTisZero ? '<div style="font-size:13px;color:var(--text3);margin-bottom:10px">No tissue samples recorded.</div>' : `<div style="margin-bottom:10px"><div class="exp-section-label">Tissue samples</div>${tisRows}</div>`}
         ${p.notes?`<div style="font-size:13px;color:var(--text2);margin-bottom:8px">${p.notes}</div>`:''}
         ${p.activityLog&&p.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${p.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
-        ${renderDriveLinks(p.driveLinks)}
+        ${renderDriveLinks(p.driveLinks, {collection:'pdxmodels', docId:p.id})}
         <div class="action-row">
           <button class="btn-sm" onclick="editPDXModel('${p.id}')">Edit</button>
           <button class="btn-sm danger" onclick="deletePDXModel('${p.id}')">Delete</button>
