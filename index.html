@@ -114,6 +114,44 @@
   .rte-editor i, .rte-editor em { font-style: italic; }
   .result-box { background: var(--accent-light); border-left: 3px solid var(--accent); padding: 8px 10px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 13px; color: var(--accent-text); margin-top: 6px; }
   .rte-editor:empty:before { content: attr(data-placeholder); color: var(--text3); pointer-events: none; }
+  .exp-item-browser { border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: var(--surface2); max-height: 280px; overflow-y: auto; }
+  .exp-picker-group { border-bottom: 0.5px solid var(--border); }
+  .exp-picker-group:last-child { border-bottom: none; }
+  .exp-picker-group > summary { cursor: pointer; list-style: none; padding: 9px 10px; font-size: 13px; font-weight: 600; color: var(--accent-text); background: var(--accent-light); display: flex; align-items: center; justify-content: space-between; }
+  .exp-picker-group > summary::-webkit-details-marker { display: none; }
+  .exp-picker-group > summary::after { content: '›'; font-size: 18px; color: var(--text3); transform: rotate(0deg); transition: transform 0.15s; }
+  .exp-picker-group[open] > summary::after { transform: rotate(90deg); }
+  .exp-picker-category { border-top: 0.5px solid var(--border); }
+  .exp-picker-category > summary { cursor: pointer; list-style: none; padding: 7px 12px; font-size: 12px; font-weight: 600; color: var(--text2); display: flex; justify-content: space-between; }
+  .exp-picker-category > summary::-webkit-details-marker { display: none; }
+  .exp-picker-items { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px 9px; }
+  .exp-picker-item { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; background: var(--surface); color: var(--text); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 7px 9px; font-size: 13px; cursor: pointer; }
+  .exp-picker-item:hover { border-color: var(--accent); }
+  .exp-picker-item:disabled { cursor: default; opacity: 0.55; }
+  .exp-selected-row { display: grid; grid-template-columns: minmax(0,1fr) 92px auto; gap: 7px; align-items: center; background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 8px; }
+  .exp-selected-name { min-width: 0; font-size: 13px; font-weight: 500; }
+  .exp-selected-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .exp-review-summary { display:flex; flex-direction:column; gap:12px; }
+  .exp-review-notice { background:var(--info-light); color:var(--info); border-left:3px solid var(--info); border-radius:0 var(--radius-sm) var(--radius-sm) 0; padding:9px 11px; font-size:13px; line-height:1.5; }
+  .exp-review-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .exp-review-field { background:var(--surface2); border:0.5px solid var(--border); border-radius:var(--radius-sm); padding:9px 10px; min-width:0; }
+  .exp-review-field.full { grid-column:1 / -1; }
+  .exp-review-label { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+  .exp-review-value { font-size:13px; color:var(--text); overflow-wrap:anywhere; }
+  .exp-review-section { border:0.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; }
+  .exp-review-section-title { padding:8px 10px; background:var(--surface2); border-bottom:0.5px solid var(--border); font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; }
+  .exp-review-section-body { padding:10px; font-size:13px; line-height:1.6; color:var(--text2); overflow-wrap:anywhere; }
+  .exp-review-section-body ul, .exp-review-section-body ol { padding-left:20px; margin:4px 0; }
+  .exp-review-items { display:flex; flex-direction:column; gap:6px; }
+  .exp-review-item { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; padding:8px 9px; background:var(--surface2); border:0.5px solid var(--border); border-radius:var(--radius-sm); }
+  .exp-review-item-name { font-size:13px; font-weight:500; min-width:0; overflow-wrap:anywhere; }
+  .exp-review-item-type { font-size:11px; color:var(--text3); margin-top:2px; }
+  .exp-review-item-amount { font-size:13px; font-weight:600; white-space:nowrap; }
+  .exp-review-empty { color:var(--text3); font-style:italic; }
+  .exp-review-files { display:flex; flex-direction:column; gap:5px; }
+  .exp-review-file { display:flex; justify-content:space-between; gap:10px; padding:6px 8px; background:var(--surface2); border-radius:var(--radius-sm); font-size:12px; }
+  @media (max-width: 560px) { .exp-review-grid { grid-template-columns:1fr; } .exp-review-field.full { grid-column:auto; } }
+  @media (max-width: 480px) { .exp-selected-row { grid-template-columns: minmax(0,1fr) 76px auto; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
@@ -192,6 +230,7 @@
     <div class="tab" onclick="switchTab('tissues')">Tissues</div>
     <div class="tab" onclick="switchTab('celllines')">Cell Lines</div>
     <div class="tab" onclick="switchTab('pdxmodels')">PDX Models</div>
+    <div class="tab" onclick="switchTab('toorder')">To Order</div>
 
   </div>
 
@@ -202,6 +241,15 @@
       <button class="btn-add" onclick="openModal('modal-add-project')">＋ New project</button>
     </div>
 
+    <div class="filter-bar">
+      <input type="search" id="proj-search" placeholder="Search projects…" oninput="renderProjects()" style="flex:1;min-width:160px" />
+      <select id="proj-sort" onchange="renderProjects()">
+        <option value="name-asc">Name A→Z</option>
+        <option value="name-desc">Name Z→A</option>
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+      </select>
+    </div>
     <div id="projects-list"><div class="empty">No projects yet.</div></div>
   </div>
 
@@ -212,11 +260,22 @@
       <button class="btn-add" onclick="openModal('modal-add-material')">＋ Add material</button>
     </div>
     <div class="filter-bar">
+      <input type="search" id="mat-search" placeholder="Search name, company, catalog, location, sequence…" oninput="renderMaterials()" style="flex:1;min-width:180px" />
       <select id="mat-filter-cat" onchange="renderMaterials()">
         <option value="">All categories</option>
         <option>Antibody</option><option>Reagent</option><option>Kit</option>
         <option>Medium</option><option>Plastics</option><option>Primer</option>
         <option>Plasmid</option><option>Other</option>
+      </select>
+      <select id="mat-filter-purpose" onchange="renderMaterials()">
+        <option value="">All purposes</option>
+        <option>FACS</option><option>MACSima</option><option>IF panel</option><option>Other</option>
+      </select>
+      <select id="mat-sort" onchange="renderMaterials()">
+        <option value="name-asc">Name A→Z</option>
+        <option value="name-desc">Name Z→A</option>
+        <option value="stock-asc">Lowest stock</option>
+        <option value="stock-desc">Highest stock</option>
       </select>
     </div>
     <div id="materials-list"><div class="empty">No materials yet.</div></div>
@@ -228,6 +287,15 @@
       <div class="section-title">Tissues &amp; Samples</div>
       <button class="btn-add" onclick="openModal('modal-add-tissue')">＋ Add sample</button>
     </div>
+    <div class="filter-bar">
+      <input type="search" id="tis-search" placeholder="Search tissues by name, type, freezer…" oninput="renderTissues()" style="flex:1;min-width:160px" />
+      <select id="tis-sort" onchange="renderTissues()">
+        <option value="name-asc">Name A→Z</option>
+        <option value="name-desc">Name Z→A</option>
+        <option value="qty-desc">Most quantity</option>
+        <option value="qty-asc">Least quantity</option>
+      </select>
+    </div>
     <div id="tissues-list"></div>
     <div id="freezer-view"></div>
   </div>
@@ -238,6 +306,15 @@
       <div class="section-title">Cell Lines</div>
       <button class="btn-add" onclick="openModal('modal-add-cellline')">＋ Add cell line</button>
     </div>
+    <div class="filter-bar">
+      <input type="search" id="cl-search" placeholder="Search cell lines, origin, location…" oninput="renderCellLines()" style="flex:1;min-width:160px" />
+      <select id="cl-sort" onchange="renderCellLines()">
+        <option value="name-asc">Name A→Z</option>
+        <option value="name-desc">Name Z→A</option>
+        <option value="vials-desc">Most vials</option>
+        <option value="vials-asc">Fewest vials</option>
+      </select>
+    </div>
     <div id="celllines-list"><div class="empty">No cell lines yet.</div></div>
   </div>
 
@@ -245,7 +322,7 @@
   <div class="tab-content" id="tab-experiments">
     <div class="section-header">
       <div class="section-title">Experiments</div>
-      <button class="btn-add" onclick="openModal('modal-add-experiment')">＋ New experiment</button>
+      <button class="btn-add" onclick="openNewExperiment()">＋ New experiment</button>
     </div>
     <div class="filter-bar">
       <select id="exp-filter-user" onchange="renderExperiments()">
@@ -273,8 +350,22 @@
     </div>
     <div class="filter-bar">
       <input type="text" id="pdx-filter-search" placeholder="Search by model name, ID…" oninput="renderPDXModels()" style="flex:1" />
+      <select id="pdx-sort" onchange="renderPDXModels()">
+        <option value="name-asc">Name A→Z</option>
+        <option value="name-desc">Name Z→A</option>
+        <option value="year-desc">Newest year</option>
+        <option value="year-asc">Oldest year</option>
+      </select>
     </div>
     <div id="pdxmodels-list"><div class="empty">No PDX models yet.</div></div>
+  </div>
+
+  <!-- TO ORDER TAB -->
+  <div class="tab-content" id="tab-toorder" style="display:none">
+    <div class="section-header">
+      <div class="section-title">To Order — Low &amp; Out of Stock</div>
+    </div>
+    <div id="toorder-list"><div class="empty">Loading…</div></div>
   </div>
 
   <div class="tab-content" id="tab-activitylog" style="display:none"><div id="log-list"></div></div>
@@ -287,7 +378,14 @@
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="field"><label>Project name</label><input type="text" id="proj-name" placeholder="e.g. PDX14 experiment" /></div>
       <div class="field"><label>Description (optional)</label><textarea id="proj-desc" placeholder="Brief notes..."></textarea></div>
-      <div class="field"><label>📎 Attachments</label><div id="proj-drive-links" style="display:flex;flex-direction:column;gap:6px"></div><button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addDriveLinkRow('proj-drive-links')">＋ Attach file</button></div>
+      <div class="field">
+        <label>📎 Attachments</label>
+        <div id="proj-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
+          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'proj-drive-links')">
+        </label>
+      </div>
       <div class="field">
         <label>Assign materials</label>
         <input type="text" id="proj-mat-search" placeholder="Search materials…" oninput="populateMaterialCheckboxes(this.value)" style="margin-bottom:6px;background:var(--surface2);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:8px 12px;font-size:14px;color:var(--text);width:100%;outline:none" />
@@ -438,6 +536,10 @@
           <div class="field"><label>Bacterial resistance</label><input type="text" id="mat-pla-resistance" placeholder="e.g. AmpR" /></div>
         </div>
         <div class="field-row">
+          <div class="field"><label>Selection marker</label><input type="text" id="mat-pla-selection" placeholder="e.g. Blasticidin, Puromycin" /></div>
+          <div class="field"><label>Concentration</label><input type="text" id="mat-pla-conc" placeholder="e.g. 86.7 ng/µL" /></div>
+        </div>
+        <div class="field-row">
           <div class="field"><label>AddGene ID</label><input type="text" id="mat-pla-addgene-id" placeholder="e.g. 12345" /></div>
           <div class="field"><label>Received from</label><input type="text" id="mat-pla-from" placeholder="e.g. Dr. Smith" /></div>
         </div>
@@ -448,7 +550,54 @@
         <div class="field"><label>Host cell lines</label><input type="text" id="mat-pla-celllines" placeholder="e.g. HEK293T, Jurkat" /></div>
       </div>
 
-      <div class="field"><label>📎 Attachments</label><div id="mat-drive-links" style="display:flex;flex-direction:column;gap:6px"></div><button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addDriveLinkRow('mat-drive-links')">＋ Attach file</button></div>
+      <!-- Antibody-specific fields -->
+      <div id="antibody-fields" style="display:none;flex-direction:column;gap:12px">
+        <div class="sep"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em">Antibody details</div>
+        <div class="field"><label>Purpose / usage</label>
+          <select id="mat-ab-purpose" onchange="abPurposeChanged()">
+            <option value="">— select —</option>
+          </select>
+          <input type="text" id="mat-ab-purpose-new" placeholder="Type new purpose name" style="display:none;margin-top:6px" />
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Clone</label><input type="text" id="mat-ab-clone" placeholder="e.g. EPR4054" /></div>
+          <div class="field"><label>Conjugate / label (color)</label><input type="text" id="mat-ab-conjugate" placeholder="e.g. APC, FITC — blank if unconjugated" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Reactivity</label><input type="text" id="mat-ab-reactivity" placeholder="e.g. anti-mouse, anti-human" /></div>
+          <div class="field"><label>Ordering number (Cat #)</label><input type="text" id="mat-ab-catalog" placeholder="e.g. ab267397" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Company</label><input type="text" id="mat-ab-company" placeholder="e.g. Abcam" /></div>
+          <div class="field"><label>Lot #</label><input type="text" id="mat-ab-lot" placeholder="optional" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Host</label><input type="text" id="mat-ab-host" placeholder="e.g. Rabbit, Mouse, Goat" /></div>
+          <div class="field"><label>Clonality</label><input type="text" id="mat-ab-clonality" placeholder="e.g. monoclonal" /></div>
+        </div>
+        <div class="field"><label>Synonym / alias</label><input type="text" id="mat-ab-synonym" placeholder="optional" /></div>
+        <div class="field-row">
+          <div class="field"><label>Dilution</label><input type="text" id="mat-ab-dilution" placeholder="e.g. 1:50" /></div>
+          <div class="field"><label>Suggested antigen retrieval</label><input type="text" id="mat-ab-retrieval" placeholder="e.g. pH6 (citrate)" /></div>
+        </div>
+        <div class="field"><label>Validation / status</label><input type="text" id="mat-ab-status" placeholder="e.g. validated (TEC), working mouse" /></div>
+        <div class="field"><label>Source list / panel</label><input type="text" id="mat-ab-source" placeholder="e.g. FACS, MACSima human" /></div>
+        <div class="field"><label>Product link</label><input type="url" id="mat-ab-link" placeholder="https://…" /></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Delivery date</label><input type="date" id="mat-ab-arrival" /></div>
+          <div class="field"><label>Expiration date</label><input type="date" id="mat-ab-expiry" /></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>📎 Attachments</label>
+        <div id="mat-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
+          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'mat-drive-links')">
+        </label>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-material')">Cancel</button>
@@ -482,7 +631,14 @@
       </div>
       <div class="field"><label>Date frozen</label><input type="date" id="tis-date" /></div>
       <div class="field"><label>Notes</label><textarea id="tis-notes" placeholder="Passage, condition, etc."></textarea></div>
-      <div class="field"><label>📎 Attachments</label><div id="tis-drive-links" style="display:flex;flex-direction:column;gap:6px"></div><button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addDriveLinkRow('tis-drive-links')">＋ Attach file</button></div>
+      <div class="field">
+        <label>📎 Attachments</label>
+        <div id="tis-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
+          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'tis-drive-links')">
+        </label>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-tissue')">Cancel</button>
@@ -507,7 +663,14 @@
       </div>
       <div class="field"><label>Origin / source</label><input type="text" id="cl-origin" placeholder="e.g. ATCC, in-house" /></div>
       <div class="field"><label>Notes (mycoplasma status, genotype…)</label><textarea id="cl-notes" placeholder="Optional"></textarea></div>
-      <div class="field"><label>📎 Attachments</label><div id="cl-drive-links" style="display:flex;flex-direction:column;gap:6px"></div><button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addDriveLinkRow('cl-drive-links')">＋ Attach file</button></div>
+      <div class="field">
+        <label>📎 Attachments</label>
+        <div id="cl-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
+          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'cl-drive-links')">
+        </label>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-cellline')">Cancel</button>
@@ -530,9 +693,11 @@
         <select id="exp-project"><option value="">— none —</option></select>
       </div>
       <div class="field">
-        <label>Materials used</label>
+        <label>Items used <span style="font-weight:400;color:var(--text3)">— reserved from inventory when the draft is saved</span></label>
         <div id="exp-material-rows" style="display:flex;flex-direction:column;gap:6px"></div>
-        <button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addExpMaterialRow()">＋ Add material</button>
+        <input type="search" id="exp-item-search" placeholder="Search materials, antibodies, tissues, cell lines, PDX tissues…" oninput="renderExpItemPicker(this.value)" style="margin-top:4px" />
+        <div id="exp-item-picker" class="exp-item-browser"></div>
+        <div style="font-size:11px;color:var(--text3)">Open a section or category, then click an item to add it. Every selected item must have an amount greater than zero.</div>
       </div>
       <div class="field">
         <label>Protocol / method</label>
@@ -575,11 +740,46 @@
         </div>
       </div>
       <div class="field"><label>Notes</label><textarea id="exp-notes" placeholder="Any other relevant info..."></textarea></div>
-      <div class="field"><label>📎 Attachments</label><div id="exp-drive-links" style="display:flex;flex-direction:column;gap:6px"></div><button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addDriveLinkRow('exp-drive-links')">＋ Attach file</button></div>
+      <div class="field">
+        <label>📎 Attachments</label>
+        <div id="exp-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
+          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'exp-drive-links')">
+        </label>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-experiment')">Cancel</button>
-      <button class="btn-primary" style="flex:2" onclick="addExperiment()">Save experiment</button>
+      <button class="btn-primary" style="flex:2" onclick="addExperiment()">Save as draft</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REVIEW EXPERIMENT BEFORE FINALIZING -->
+<div class="modal-backdrop center" id="modal-experiment-review" style="display:none;z-index:120">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-title" id="exp-review-title">Review before finalizing</div>
+    <div id="exp-review-content" class="exp-review-summary"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" onclick="closeExperimentFinalizationReview()">Cancel</button>
+      <button type="button" class="btn-primary" id="exp-review-confirm-btn" style="flex:2" onclick="confirmExperimentFinalization()">Finalize experiment</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DELETE EXPERIMENT STOCK CHOICE -->
+<div class="modal-backdrop center" id="modal-delete-experiment-choice" style="display:none;z-index:125">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title">Delete experiment</div>
+    <div id="delete-exp-choice-content" style="font-size:13px;color:var(--text2);line-height:1.6"></div>
+    <div style="background:var(--warn-light);color:var(--warn);border-left:3px solid var(--warn);padding:9px 11px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:13px;line-height:1.5;margin-top:12px">
+      Choose whether the quantities reserved by this experiment should be returned to inventory.
+    </div>
+    <div class="modal-footer" style="flex-wrap:wrap">
+      <button type="button" class="btn-cancel" onclick="closeDeleteExperimentChoice()">Cancel</button>
+      <button type="button" class="btn-sm danger" id="delete-exp-keep-btn" style="flex:1;min-width:190px;padding:10px 14px" onclick="confirmDeleteExperiment(false)">Delete and keep deducted</button>
+      <button type="button" class="btn-primary" id="delete-exp-restore-btn" style="flex:1.3;min-width:210px" onclick="confirmDeleteExperiment(true)">Delete and restore stock</button>
     </div>
   </div>
 </div>
@@ -650,7 +850,14 @@
 
       <div class="sep"></div>
       <div class="field"><label>Comments / Notes</label><textarea id="pdx-notes" placeholder="Passage number, treatment history, any relevant notes…"></textarea></div>
-      <div class="field"><label>📎 Attachments</label><div id="pdx-drive-links" style="display:flex;flex-direction:column;gap:6px"></div><button type="button" class="btn-sm" style="margin-top:6px;width:fit-content" onclick="addDriveLinkRow('pdx-drive-links')">＋ Attach file</button></div>
+      <div class="field">
+        <label>📎 Attachments</label>
+        <div id="pdx-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
+          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'pdx-drive-links')">
+        </label>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-pdx')">Cancel</button>
@@ -665,7 +872,7 @@
     <div class="modal-title" style="font-size:16px" id="confirm-msg"></div>
     <div class="modal-footer" style="margin-top:1rem">
       <button class="btn-cancel" onclick="doConfirm(false)">Cancel</button>
-      <button class="btn-primary" style="flex:1;background:var(--danger);border-color:var(--danger)" onclick="doConfirm(true)">Delete</button>
+      <button class="btn-primary" id="confirm-action-btn" style="flex:1;background:var(--danger);border-color:var(--danger)" onclick="doConfirm(true)">Delete</button>
     </div>
   </div>
 </div>
@@ -716,7 +923,7 @@ window.rteClear = function(id) {
 };
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, runTransaction, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -730,7 +937,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app, "gs://lab-inventory-9dddc.firebasestorage.app");
+const storage = getStorage(app);
 
 // ── Storage bucket ───────────────────────────────────────────────────────────
 // Remember to set Firebase Storage rules to: allow read, write: if true;
@@ -748,13 +955,14 @@ const state = { materials: [], projects: [], tissues: [], celllines: [], experim
 
 // ── Firestore helpers ────────────────────────────────────────────────────────
 async function saveDoc(col, id, data) { await setDoc(doc(db, col, id), data); }
+async function mergeDoc(col, id, data) { await setDoc(doc(db, col, id), data, { merge:true }); }
 async function removeDoc(col, id) { await deleteDoc(doc(db, col, id)); }
 
 // ── Listeners ────────────────────────────────────────────────────────────────
 function startListeners() {
   onSnapshot(collection(db, 'materials'), snap => {
     state.materials = snap.docs.map(d => d.data());
-    renderMaterials(); renderProjects();
+    renderMaterials(); renderProjects(); renderToOrder(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
   });
   onSnapshot(collection(db, 'projects'), snap => {
     state.projects = snap.docs.map(d => d.data());
@@ -762,11 +970,11 @@ function startListeners() {
   });
   onSnapshot(collection(db, 'tissues'), snap => {
     state.tissues = snap.docs.map(d => d.data());
-    renderTissues();
+    renderTissues(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
   });
   onSnapshot(collection(db, 'celllines'), snap => {
     state.celllines = snap.docs.map(d => d.data());
-    renderCellLines();
+    renderCellLines(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
   });
   onSnapshot(collection(db, 'experiments'), snap => {
     state.experiments = snap.docs.map(d => d.data()).sort((a,b) => (b.date||'').localeCompare(a.date||''));
@@ -775,7 +983,7 @@ function startListeners() {
 
   onSnapshot(collection(db, 'pdxmodels'), snap => {
     state.pdxmodels = snap.docs.map(d => d.data()).sort((a,b) => (a.name||'').localeCompare(b.name||''));
-    renderPDXModels();
+    renderPDXModels(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
   });
   onSnapshot(collection(db, 'log'), snap => {
     state.log = snap.docs.map(d => d.data()).sort((a,b) => b.ts - a.ts);
@@ -898,10 +1106,28 @@ window.openModal = function(id) {
     populateProjectCheckboxes('proj-tissue-checkboxes', state.tissues, m => m.name + ' · ' + m.type + ' (' + m.qty + ' aliquots)');
     populateProjectCheckboxes('proj-cellline-checkboxes', state.celllines, m => m.name + ' P' + m.passage);
   }
-  if (id === 'modal-add-experiment') { populateExpProjectSelect(); populateExpMaterialRows(); populateExpPerformer(); }
+  if (id === 'modal-add-material') { toggleOther('mat-cat','mat-cat-other'); }
+  if (id === 'modal-add-experiment') { populateExpPerformer(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || ''); }
   document.getElementById(id).style.display = 'flex';
 };
-window.closeModal = function(id) { document.getElementById(id).style.display = 'none'; };
+window.closeModal = function(id) {
+  document.getElementById(id).style.display = 'none';
+  // Clear any pending files for this modal's attachment container
+  const modalToContainer = {
+    'modal-add-project': 'proj-drive-links',
+    'modal-add-material': 'mat-drive-links',
+    'modal-add-tissue': 'tis-drive-links',
+    'modal-add-cellline': 'cl-drive-links',
+    'modal-add-experiment': 'exp-drive-links',
+    'modal-add-pdx': 'pdx-drive-links',
+  };
+  const cid = modalToContainer[id];
+  if (cid) {
+    pendingFiles[cid] = [];
+    const wrap = document.getElementById(cid);
+    if (wrap) wrap.querySelectorAll('.pending-file-row').forEach(el => el.remove());
+  }
+};
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function showToast(msg) {
@@ -910,6 +1136,18 @@ function showToast(msg) {
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2200);
+}
+
+function showUploadError(msg) {
+  document.querySelectorAll('.upload-error-banner').forEach(el => el.remove());
+  const t = document.createElement('div');
+  t.className = 'upload-error-banner';
+  t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--danger);color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:500;z-index:300;max-width:90vw;text-align:center;cursor:pointer;';
+  t.textContent = msg;
+  t.title = 'Click to dismiss';
+  t.onclick = () => t.remove();
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 8000);
 }
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
@@ -999,8 +1237,16 @@ window.renderProjects = function() {
   const el = document.getElementById('projects-list');
   if (!el) return;
   const filterUser = document.getElementById('proj-filter-user')?.value || '';
-  let projs = state.projects;
+  const term = (document.getElementById('proj-search')?.value || '').trim().toLowerCase();
+  const sort = document.getElementById('proj-sort')?.value || 'name-asc';
+  let projs = [...state.projects];
   if (filterUser) projs = projs.filter(p => p.createdBy === filterUser);
+  if (term) projs = projs.filter(p => [p.name, p.desc, p.createdBy].filter(Boolean).join(' ').toLowerCase().includes(term));
+  projs.sort((a,b) =>
+    sort === 'name-desc' ? (b.name||'').localeCompare(a.name||'') :
+    sort === 'date-desc' ? (b.id||'').localeCompare(a.id||'') :
+    sort === 'date-asc'  ? (a.id||'').localeCompare(b.id||'') :
+                           (a.name||'').localeCompare(b.name||''));
   if (projs.length === 0) { el.innerHTML = '<div class="empty">No projects found.</div>'; return; }
   el.innerHTML = projs.map(p => {
     const mats = state.materials.filter(m => p.materialIds && p.materialIds.includes(m.id));
@@ -1037,9 +1283,16 @@ window.renderProjects = function() {
 window.addMaterial = async function() {
   const name = document.getElementById('mat-name').value.trim();
   if (!name) { document.getElementById('mat-name').focus(); return; }
+  const selectedCategory = document.getElementById('mat-cat').value;
+  const category = selectedCategory === 'Other' ? (document.getElementById('mat-cat-other').value.trim() || 'Other') : selectedCategory;
+  if (category === 'Antibody' && !readAbPurpose()) {
+    alert('Please select an antibody purpose or add a new purpose.');
+    document.getElementById('mat-ab-purpose').focus();
+    return;
+  }
   const mat = {
     id: Date.now()+'', name,
-    category: document.getElementById('mat-cat').value === 'Other' ? (document.getElementById('mat-cat-other').value.trim() || 'Other') : document.getElementById('mat-cat').value,
+    category,
     stock: parseFloat(document.getElementById('mat-stock').value) || 0,
     unit: document.getElementById('mat-unit').value.trim() || 'units',
     lowAt: parseFloat(document.getElementById('mat-low').value) || 1,
@@ -1064,6 +1317,8 @@ window.addMaterial = async function() {
     plaInsertSize: parseFloat(document.getElementById('mat-pla-insert-size').value)||0,
     plaPromoter: document.getElementById('mat-pla-promoter').value.trim(),
     plaResistance: document.getElementById('mat-pla-resistance').value.trim(),
+    plaSelection: document.getElementById('mat-pla-selection').value.trim(),
+    plaConc: document.getElementById('mat-pla-conc').value.trim(),
     plaAddgeneId: document.getElementById('mat-pla-addgene-id').value.trim(),
     plaFrom: document.getElementById('mat-pla-from').value.trim(),
     plaLinkAddgene: document.getElementById('mat-pla-link-addgene').value.trim(),
@@ -1085,6 +1340,25 @@ window.addMaterial = async function() {
     mat.unit = 'µL';
     if (mat.priLowAt > 0) mat.lowAt = mat.priLowAt;
   }
+  if (mat.category === 'Antibody') {
+    mat.company = document.getElementById('mat-ab-company').value.trim();
+    mat.catalog = document.getElementById('mat-ab-catalog').value.trim();
+    mat.link = document.getElementById('mat-ab-link').value.trim();
+    mat.arrival = document.getElementById('mat-ab-arrival').value;
+    mat.expiry = document.getElementById('mat-ab-expiry').value;
+    mat.abClone = document.getElementById('mat-ab-clone').value.trim();
+    mat.abConjugate = document.getElementById('mat-ab-conjugate').value.trim();
+    mat.abReactivity = document.getElementById('mat-ab-reactivity').value.trim();
+    mat.abHost = document.getElementById('mat-ab-host').value.trim();
+    mat.abClonality = document.getElementById('mat-ab-clonality').value.trim();
+    mat.abSynonym = document.getElementById('mat-ab-synonym').value.trim();
+    mat.abRetrieval = document.getElementById('mat-ab-retrieval').value.trim();
+    mat.abDilution = document.getElementById('mat-ab-dilution').value.trim();
+    mat.abLot = document.getElementById('mat-ab-lot').value.trim();
+    mat.abStatus = document.getElementById('mat-ab-status').value.trim();
+    mat.abSource = document.getElementById('mat-ab-source').value.trim();
+    mat.abPurpose = readAbPurpose();
+  }
   mat.driveLinks = await uploadPendingFiles('mat-drive-links', 'materials/' + mat.id);
   await saveDoc('materials', mat.id, mat);
   closeModal('modal-add-material');
@@ -1096,14 +1370,19 @@ window.addMaterial = async function() {
   document.getElementById('reagent-fields').style.display = 'none';
   document.getElementById('primer-fields').style.display = 'none';
   document.getElementById('plasmid-fields').style.display = 'none';
+  { const abf=document.getElementById('antibody-fields'); if(abf) abf.style.display='none'; }
   ['mat-company','mat-catalog','mat-size','mat-opened','mat-link',
    'mat-pri-sequence','mat-pri-stock-conc','mat-pri-work-conc','mat-pri-tm',
    'mat-pla-id','mat-pla-backbone','mat-pla-insert','mat-pla-insert-size',
    'mat-pla-promoter','mat-pla-resistance','mat-pla-addgene-id','mat-pla-from',
    'mat-pla-link-addgene','mat-pla-link-benchling','mat-pla-celllines',
-   'mat-pri-application-other','mat-pla-vectype-other'
+   'mat-pri-application-other','mat-pla-vectype-other',
+   'mat-ab-clone','mat-ab-conjugate','mat-ab-reactivity','mat-ab-catalog','mat-ab-company','mat-ab-lot',
+   'mat-ab-host','mat-ab-clonality','mat-ab-synonym','mat-ab-dilution','mat-ab-retrieval','mat-ab-status',
+   'mat-ab-source','mat-ab-link','mat-ab-arrival','mat-ab-expiry','mat-ab-purpose-new'
   ].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   document.querySelectorAll('#mat-hazard-wrap input').forEach(i => i.checked = false);
+  populateAbPurposeSelect('');
   document.getElementById('mat-drive-links').innerHTML = '';
   await markChange(`Added material "${name}"`);
 };
@@ -1114,23 +1393,104 @@ function stockBadge(mat) {
   return '<span class="badge badge-ok">In stock</span>';
 }
 
+function getPurposes() {
+  const base = ['FACS', 'MACSima', 'IF panel', 'Other'];
+  const used = state.materials.filter(m => m.category === 'Antibody' && m.abPurpose).map(m => m.abPurpose);
+  return [...new Set([...base, ...used])];
+}
+window.populateAbPurposeSelect = function(selected) {
+  const sel = document.getElementById('mat-ab-purpose');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— select —</option>'
+    + getPurposes().map(p => `<option${p === selected ? ' selected' : ''}>${p}</option>`).join('')
+    + '<option value="__new__">➕ Add new purpose…</option>';
+  const ni = document.getElementById('mat-ab-purpose-new');
+  if (ni) { ni.style.display = 'none'; ni.value = ''; }
+};
+window.abPurposeChanged = function() {
+  const sel = document.getElementById('mat-ab-purpose');
+  const ni = document.getElementById('mat-ab-purpose-new');
+  if (!sel || !ni) return;
+  const show = sel.value === '__new__';
+  ni.style.display = show ? 'block' : 'none';
+  if (show) ni.focus();
+};
+function readAbPurpose() {
+  const sel = document.getElementById('mat-ab-purpose');
+  if (!sel) return '';
+  if (sel.value === '__new__') return (document.getElementById('mat-ab-purpose-new').value || '').trim();
+  return sel.value;
+}
+
+window.renderToOrder = function() {
+  const el = document.getElementById('toorder-list');
+  if (!el) return;
+  const items = state.materials
+    .filter(m => (m.stock ?? 0) <= (m.lowAt ?? 0))
+    .sort((a, b) => (((a.stock ?? 0) <= 0 ? 0 : 1) - ((b.stock ?? 0) <= 0 ? 0 : 1)) || (a.name || '').localeCompare(b.name || ''));
+  if (items.length === 0) { el.innerHTML = '<div class="empty">Nothing to order — all stock is above threshold. 🎉</div>'; return; }
+  const rows = items.map(m => {
+    const out = (m.stock ?? 0) <= 0;
+    const badge = out ? '<span class="badge badge-out">Out of stock</span>' : '<span class="badge badge-low">Low stock</span>';
+    return `<div class="item-card"><div class="item-card-header"><div>
+      <div class="item-card-title">${m.name} ${badge}</div>
+      <div class="item-card-meta">${m.category || '—'}${m.company ? ' · ' + m.company : ''}${m.catalog ? ' · Cat# ' + m.catalog : ''} · have ${m.stock ?? 0} / reorder at ${m.lowAt ?? 0} ${m.unit || ''}</div>
+    </div><button class="btn-sm" onclick="editMaterial('${m.id}')">Update stock</button></div></div>`;
+  }).join('');
+  el.innerHTML = `<div class="filter-bar"><div class="sub" style="margin:0">${items.length} item(s) at or below reorder threshold</div><button class="btn-sm" onclick="copyOrderList()" style="margin-left:auto">Copy list</button></div>${rows}`;
+  window._orderList = items.map(m => `${m.name}${m.company ? ' (' + m.company + ')' : ''}${m.catalog ? ' [' + m.catalog + ']' : ''} — have ${m.stock ?? 0} ${m.unit || ''}, reorder at ${m.lowAt ?? 0}`).join('\n');
+};
+window.copyOrderList = function() { navigator.clipboard?.writeText(window._orderList || '').then(() => showToast('Order list copied to clipboard')); };
+
 window.renderMaterials = function() {
   const el = document.getElementById('materials-list');
   if (!el) return;
   const filterCat = document.getElementById('mat-filter-cat')?.value || '';
+  const purpose = document.getElementById('mat-filter-purpose')?.value || '';
+  const pf = document.getElementById('mat-filter-purpose');
+  if (pf) { const want = '<option value="">All purposes</option>' + getPurposes().map(p=>`<option>${p}</option>`).join(''); if (pf.innerHTML !== want) { const cur = pf.value; pf.innerHTML = want; pf.value = cur; } }
+  const term = (document.getElementById('mat-search')?.value || '').trim().toLowerCase();
   let mats = state.materials;
   if (filterCat) mats = mats.filter(m => m.category === filterCat);
+  if (purpose) mats = mats.filter(m => m.category === 'Antibody' && (m.abPurpose||'') === purpose);
+  if (term) {
+    // Prefer visible material-name matches. Only search secondary metadata when
+    // no material name matches, so short queries such as "cd" do not surface
+    // unrelated items because of a hidden catalog, clone, note, or company field.
+    const nameMatches = mats.filter(m => (m.name || '').toLowerCase().includes(term));
+    if (nameMatches.length > 0) {
+      mats = nameMatches;
+    } else {
+      mats = mats.filter(m => [
+        m.company, m.catalog, m.location, m.notes, m.size,
+        m.plaId, m.plaInsert, m.plaBackbone, m.plaPromoter, m.plaResistance, m.plaSelection, m.plaAddgeneId, m.plaCelllines, m.plaVectype,
+        m.priSequence, m.priOrientation, m.priApplication,
+        m.abClone, m.abConjugate, m.abReactivity, m.abHost, m.abClonality, m.abSynonym, m.abStatus, m.abSource, m.abPurpose,
+        Array.isArray(m.hazard) ? m.hazard.join(' ') : m.hazard
+      ].filter(Boolean).join(' ').toLowerCase().includes(term));
+    }
+  }
+  const matSort = document.getElementById('mat-sort')?.value || 'name-asc';
+  mats = [...mats].sort((a,b) =>
+    matSort === 'name-desc'  ? (b.name||'').localeCompare(a.name||'') :
+    matSort === 'stock-asc'  ? (a.stock||0) - (b.stock||0) :
+    matSort === 'stock-desc' ? (b.stock||0) - (a.stock||0) :
+                               (a.name||'').localeCompare(b.name||''));
+  if (filterCat === 'Antibody' || purpose) {
+    const order = { 'FACS':0, 'MACSima':1, 'IF panel':2, 'Other':3, '':4 };
+    mats = [...mats].sort((a,b) => (order[a.abPurpose||'']??9) - (order[b.abPurpose||'']??9) || (a.name||'').localeCompare(b.name||''));
+  }
   if (mats.length === 0) { el.innerHTML = '<div class="empty">No materials found.</div>'; return; }
   el.innerHTML = mats.map(m => {
     const logs = (m.log || []).slice(0,3).map(l =>
-      `<div class="log-entry"><span class="log-desc">${l.action==='consume'?'↓ Used':l.action==='add'?'↑ Added':'→ Moved'} ${l.action!=='relocate'?l.amount+' '+m.unit:l.note}${l.note&&l.action!=='relocate'?' — '+l.note:''}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`
+      `<div class="log-entry"><span class="log-desc">${l.action==='consume'?'↓ Reserved/used':l.action==='restore'?'↑ Restored':l.action==='add'?'↑ Added':'→ Moved'} ${l.action!=='relocate'?l.amount+' '+m.unit:l.note}${l.note&&l.action!=='relocate'?' — '+l.note:''}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`
     ).join('');
     const expBadge = expiryBadge(m.expiry);
     return `<div class="item-card">
       <div class="item-card-header" onclick="toggleCard('mat-${m.id}')">
         <div>
           <div class="item-card-title">${m.name} ${expBadge}</div>
-          <div class="item-card-meta">${m.category} · ${m.location||'No location'}${m.expiry?' · Exp: '+m.expiry:''}</div>
+          <div class="item-card-meta">${m.category}${m.category==='Antibody'&&m.abPurpose?' · '+m.abPurpose:''} · ${m.location||'No location'}${m.expiry?' · Exp: '+m.expiry:''}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="text-align:right">
@@ -1147,19 +1507,39 @@ window.renderMaterials = function() {
           <div style="font-family:monospace;font-size:12px;word-break:break-all;letter-spacing:0.05em">${m.priSequence}</div>
           <div style="font-size:11px;color:var(--text3);margin-top:4px">${m.priStockConc?'Stock: '+m.priStockConc+' µM':''} ${m.priWorkConc?'· Working: '+m.priWorkConc+' µM':''} ${m.priVolume?'· Vol: '+m.priVolume+' µL':''}</div>
         </div>` : ''}
-        ${m.category==='Plasmid'&&(m.plaBackbone||m.plaInsert)?`<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px">
+        ${m.category==='Plasmid'&&(m.plaBackbone||m.plaInsert||m.plaId||m.plaResistance||m.plaConc||m.plaSelection||m.plaAddgeneId)?`<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px">
           ${m.plaId?`<div><span style="color:var(--text3)">ID:</span> ${m.plaId}</div>`:''}
           ${m.plaVectype?`<div><span style="color:var(--text3)">Type:</span> ${m.plaVectype}</div>`:''}
           ${m.plaBackbone?`<div><span style="color:var(--text3)">Backbone:</span> ${m.plaBackbone}</div>`:''}
           ${m.plaInsert?`<div><span style="color:var(--text3)">Insert:</span> ${m.plaInsert}${m.plaInsertSize?' ('+m.plaInsertSize+' bp)':''}</div>`:''}
           ${m.plaPromoter?`<div><span style="color:var(--text3)">Promoter:</span> ${m.plaPromoter}</div>`:''}
           ${m.plaResistance?`<div><span style="color:var(--text3)">Resistance:</span> ${m.plaResistance}</div>`:''}
+          ${m.plaSelection?`<div><span style="color:var(--text3)">Selection:</span> ${m.plaSelection}</div>`:''}
+          ${m.plaConc?`<div><span style="color:var(--text3)">Conc:</span> ${m.plaConc}</div>`:''}
           ${m.plaFrom?`<div><span style="color:var(--text3)">From:</span> ${m.plaFrom}</div>`:''}
           ${m.plaAddgeneId?`<div><span style="color:var(--text3)">AddGene:</span> ${m.plaAddgeneId}</div>`:''}
           ${m.plaLinkAddgene?`<div style="grid-column:1/-1"><a href="${m.plaLinkAddgene}" target="_blank" style="color:var(--accent);font-size:12px">🔗 AddGene</a></div>`:''}
           ${m.plaLinkBenchling?`<div style="grid-column:1/-1"><a href="${m.plaLinkBenchling}" target="_blank" style="color:var(--accent);font-size:12px">🔗 Benchling</a></div>`:''}
         </div>` : ''}
-        ${m.category === 'Reagent' || (m.company||m.catalog||m.hazard) ? `<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px">
+        ${m.category==='Antibody'?`<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px">
+          ${m.abPurpose?`<div style="grid-column:1/-1"><span style="color:var(--text3)">Purpose:</span> <span class="tag" style="background:var(--accent-light);color:var(--accent-text)">${m.abPurpose}</span></div>`:''}
+          <div><span style="color:var(--text3)">Conjugate:</span> ${m.abConjugate||'unconjugated'}</div>
+          ${m.abClone?`<div><span style="color:var(--text3)">Clone:</span> ${m.abClone}</div>`:''}
+          ${m.abReactivity?`<div><span style="color:var(--text3)">Reactivity:</span> ${m.abReactivity}</div>`:''}
+          ${m.abHost?`<div><span style="color:var(--text3)">Host:</span> ${m.abHost}</div>`:''}
+          ${m.abClonality?`<div><span style="color:var(--text3)">Clonality:</span> ${m.abClonality}</div>`:''}
+          ${m.company?`<div><span style="color:var(--text3)">Company:</span> ${m.company}</div>`:''}
+          ${m.catalog?`<div><span style="color:var(--text3)">Cat #:</span> ${m.catalog}</div>`:''}
+          ${m.abLot?`<div><span style="color:var(--text3)">Lot:</span> ${m.abLot}</div>`:''}
+          ${m.abDilution?`<div><span style="color:var(--text3)">Dilution:</span> ${m.abDilution}</div>`:''}
+          ${m.abRetrieval?`<div><span style="color:var(--text3)">Retrieval:</span> ${m.abRetrieval}</div>`:''}
+          ${m.abSynonym?`<div><span style="color:var(--text3)">Synonym:</span> ${m.abSynonym}</div>`:''}
+          ${m.expiry?`<div><span style="color:var(--text3)">Expires:</span> ${m.expiry}</div>`:''}
+          ${m.abStatus?`<div style="grid-column:1/-1"><span style="color:var(--text3)">Status:</span> ${m.abStatus}</div>`:''}
+          ${m.abSource?`<div style="grid-column:1/-1"><span style="color:var(--text3)">Source list:</span> ${m.abSource}</div>`:''}
+          ${m.link?`<div style="grid-column:1/-1"><a href="${m.link}" target="_blank" style="color:var(--accent);font-size:12px">🔗 Product page</a></div>`:''}
+        </div>`:''}
+        ${m.category === 'Reagent' || (m.category!=='Antibody'&&m.category!=='Plasmid'&&m.category!=='Primer'&&(m.company||m.catalog||m.hazard)) ? `<div style="background:var(--surface2);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;font-size:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px">
           ${m.company?`<div><span style="color:var(--text3)">Company:</span> ${m.company}</div>`:''}
           ${m.catalog?`<div><span style="color:var(--text3)">Cat #:</span> ${m.catalog}</div>`:''}
           ${m.size?`<div><span style="color:var(--text3)">Size:</span> ${m.size}</div>`:''}
@@ -1215,8 +1595,22 @@ function renderTissues() {
     if (freezerEl) freezerEl.innerHTML = '<div class="empty">No samples stored.</div>';
     return;
   }
+  const term = (document.getElementById('tis-search')?.value || '').trim().toLowerCase();
+  const sort = document.getElementById('tis-sort')?.value || 'name-asc';
+  let tlist = [...state.tissues];
+  if (term) tlist = tlist.filter(t => [t.name, t.type, t.freezer, t.shelf, t.notes].filter(Boolean).join(' ').toLowerCase().includes(term));
+  tlist.sort((a,b) =>
+    sort === 'name-desc' ? (b.name||'').localeCompare(a.name||'') :
+    sort === 'qty-desc'  ? (b.qty||0) - (a.qty||0) :
+    sort === 'qty-asc'   ? (a.qty||0) - (b.qty||0) :
+                           (a.name||'').localeCompare(b.name||''));
+  if (tlist.length === 0) {
+    el.innerHTML = '<div class="empty">No tissues found.</div>';
+    if (freezerEl) freezerEl.innerHTML = '';
+    return;
+  }
   const byFreezer = {};
-  state.tissues.forEach(t => { if (!byFreezer[t.freezer]) byFreezer[t.freezer]=[]; byFreezer[t.freezer].push(t); });
+  tlist.forEach(t => { if (!byFreezer[t.freezer]) byFreezer[t.freezer]=[]; byFreezer[t.freezer].push(t); });
   if (freezerEl) freezerEl.innerHTML = Object.entries(byFreezer).map(([freezer, samples]) => `
     <div class="freezer-section"><div class="freezer-label">🧊 ${freezer}</div>
     <div class="shelf-grid">${samples.map(s => `
@@ -1225,7 +1619,7 @@ function renderTissues() {
         <div class="shelf-slot-content">${s.name}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:3px">${s.qty} · ${s.type}</div>
       </div>`).join('')}</div></div>`).join('');
-  el.innerHTML = state.tissues.map(s => `
+  el.innerHTML = tlist.map(s => `
     <div class="item-card">
       <div class="item-card-header" onclick="toggleCard('tis-${s.id}')">
         <div><div class="item-card-title">${s.name}</div><div class="item-card-meta">${s.type} · ${s.freezer} · ${s.shelf||'TBD'}</div></div>
@@ -1322,7 +1716,17 @@ function renderCellLines() {
   const el = document.getElementById('celllines-list');
   if (!el) return;
   if (state.celllines.length === 0) { el.innerHTML = '<div class="empty">No cell lines yet.</div>'; return; }
-  el.innerHTML = state.celllines.map(cl => `
+  const term = (document.getElementById('cl-search')?.value || '').trim().toLowerCase();
+  const sort = document.getElementById('cl-sort')?.value || 'name-asc';
+  let cls = [...state.celllines];
+  if (term) cls = cls.filter(c => [c.name, c.origin, c.location, c.notes].filter(Boolean).join(' ').toLowerCase().includes(term));
+  cls.sort((a,b) =>
+    sort === 'name-desc'  ? (b.name||'').localeCompare(a.name||'') :
+    sort === 'vials-desc' ? (b.vials||0) - (a.vials||0) :
+    sort === 'vials-asc'  ? (a.vials||0) - (b.vials||0) :
+                            (a.name||'').localeCompare(b.name||''));
+  if (cls.length === 0) { el.innerHTML = '<div class="empty">No cell lines found.</div>'; return; }
+  el.innerHTML = cls.map(cl => `
     <div class="item-card">
       <div class="item-card-header" onclick="toggleCard('cl-${cl.id}')">
         <div>
@@ -1375,6 +1779,8 @@ window.passageCellLine = async function(id) {
 };
 window.deleteCellLine = function(id) {
   const cl = state.celllines.find(c => c.id === id);
+  const linked = state.experiments.filter(e => reservedItemsForExperiment(e).some(it => it.type === 'cellline' && it.id === id));
+  if (linked.length) { alert(`This cell line is reserved by ${linked.length} experiment(s). Delete or edit those experiments first.`); return; }
   showConfirm(`Remove cell line "${cl.name}"?`, async () => { await removeDoc('celllines', id); await markChange(`Removed cell line "${cl.name}"`); });
 };
 
@@ -1387,11 +1793,6 @@ function populateExpPerformer() {
 function populateExpProjectSelect() {
   const sel = document.getElementById('exp-project');
   sel.innerHTML = '<option value="">— none —</option>' + state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-}
-
-function populateExpMaterialRows() {
-  const wrap = document.getElementById('exp-material-rows');
-  wrap.innerHTML = '';
 }
 
 // ── Other field reveal ───────────────────────────────────────────────────────
@@ -1407,9 +1808,12 @@ window.toggleOther = function(selectId, inputId) {
     const rf = document.getElementById('reagent-fields');
     const prf = document.getElementById('primer-fields');
     const plf = document.getElementById('plasmid-fields');
+    const abf = document.getElementById('antibody-fields');
     if (rf) rf.style.display = val === 'Reagent' ? 'flex' : 'none';
     if (prf) prf.style.display = val === 'Primer' ? 'flex' : 'none';
     if (plf) plf.style.display = val === 'Plasmid' ? 'flex' : 'none';
+    if (abf) abf.style.display = val === 'Antibody' ? 'flex' : 'none';
+    if (val === 'Antibody') populateAbPurposeSelect(document.getElementById('mat-ab-purpose')?.value || '');
     // Hide redundant stock/unit fields for Primer and Plasmid
     const isPriPla = val === 'Primer' || val === 'Plasmid';
     const stockRow = document.getElementById('mat-stock-unit-row');
@@ -1423,28 +1827,16 @@ window.toggleOther = function(selectId, inputId) {
 // pendingFiles: { containerId -> [{ file, name }] }
 const pendingFiles = {};
 
-window.addDriveLinkRow = function(containerId) {
+// Called directly from onchange on the <input type="file"> in each modal
+window.handleFileInput = function(input, containerId) {
   if (!pendingFiles[containerId]) pendingFiles[containerId] = [];
-  const wrap = document.getElementById(containerId);
-  // Hidden file input — we trigger it programmatically
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt';
-  input.multiple = true;
-  input.style.display = 'none';
-  input.addEventListener('change', () => {
-    [...input.files].forEach(file => {
-      if (!pendingFiles[containerId]) pendingFiles[containerId] = [];
-      // avoid duplicates by name
-      if (!pendingFiles[containerId].find(f => f.name === file.name)) {
-        pendingFiles[containerId].push({ file, name: file.name });
-      }
-    });
-    renderPendingFiles(containerId);
-    input.value = ''; // reset so same file can be re-added after removal
+  [...input.files].forEach(file => {
+    if (!pendingFiles[containerId].find(f => f.name === file.name)) {
+      pendingFiles[containerId].push({ file, name: file.name });
+    }
   });
-  document.body.appendChild(input);
-  input.click();
+  input.value = ''; // reset so same file can be picked again after removal
+  renderPendingFiles(containerId);
 };
 
 function renderPendingFiles(containerId) {
@@ -1485,7 +1877,7 @@ async function uploadPendingFiles(containerId, storagePath) {
         const task = uploadBytesResumable(storageRef, file);
         task.on('state_changed',
           (snapshot) => console.log('Upload progress:', snapshot.bytesTransferred, '/', snapshot.totalBytes),
-          (err) => { console.error('Upload error:', err.code, err.message); showToast('Upload failed: ' + err.message); reject(err); },
+          (err) => { console.error('Upload error:', err.code, err.message); showUploadError('Upload failed: ' + err.code + ' — check Firebase Storage rules (must allow read, write: if true)'); reject(err); },
           async () => {
             console.log('Upload complete, getting URL...');
             try {
@@ -1545,139 +1937,656 @@ window.deleteAttachment = async function(col, docId, index, storagePath) {
     try { await deleteObject(ref(storage, storagePath)); } catch(e) { console.warn('Storage delete failed (file may already be gone):', e.message); }
   }
   item.driveLinks = item.driveLinks.filter((_, i) => i !== index);
-  await saveDoc(col, docId, item);
+  await mergeDoc(col, docId, { driveLinks:item.driveLinks });
   await markChange(`Removed attachment from record`);
 };
 
-window.addExpMaterialRow = function() {
+// ── Experiment items and atomic inventory reservation ───────────────────────
+const PDX_TIS_LABELS = { pt:'PT', lung:'Lung', kidney:'Kidney', ovary:'Ovary', pb:'PB', bm:'BM', brain:'Brain', liver:'Liver', ft:'FT', ag:'AG' };
+const EXP_ITEM_INPUT = 'background:var(--surface);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 8px;font-size:13px;color:var(--text);outline:none;width:100%';
+let editingExperimentId = null;
+let editingOriginalReservedItems = [];
+let pendingExperimentFinalization = null;
+let pendingDeleteExperimentId = null;
+
+function escHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function expItemKey(item) { return `${item.type}:${item.id}${item.type === 'pdxtissue' ? ':' + item.sub : ''}`; }
+function expItemValue(item) { return expItemKey(item); }
+
+function expItemFromValue(value) {
+  const parts = String(value || '').split(':');
+  const type = parts[0];
+  if (type === 'pdxtissue') {
+    const p = state.pdxmodels.find(x => x.id === parts[1]);
+    if (!p || !parts[2]) return null;
+    return { type, id: parts[1], sub: parts[2], name: `${p.name} — ${PDX_TIS_LABELS[parts[2]] || parts[2]}`, unit: 'pcs', amount: 0 };
+  }
+  const id = parts.slice(1).join(':');
+  if (type === 'material') {
+    const m = state.materials.find(x => x.id === id); if (!m) return null;
+    return { type, id, name: m.name, unit: m.category === 'Primer' ? 'µL' : (m.unit || 'units'), amount: 0 };
+  }
+  if (type === 'tissue') {
+    const t = state.tissues.find(x => x.id === id); if (!t) return null;
+    return { type, id, name: t.name, unit: 'pcs', amount: 0 };
+  }
+  if (type === 'cellline') {
+    const c = state.celllines.find(x => x.id === id); if (!c) return null;
+    return { type, id, name: c.name, unit: 'vials', amount: 0 };
+  }
+  return null;
+}
+
+function normalizeExpItems(items) {
+  const merged = new Map();
+  (items || []).forEach(raw => {
+    if (!raw || !raw.type || !raw.id) return;
+    const amount = Number(raw.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const item = { ...raw, amount };
+    const key = expItemKey(item);
+    if (merged.has(key)) merged.get(key).amount += amount;
+    else merged.set(key, item);
+  });
+  return [...merged.values()].map(it => ({ ...it, amount: +it.amount.toFixed(4) }));
+}
+
+function expItems(e) {
+  if (Array.isArray(e.items)) return e.items;
+  return (e.materials || []).map(m => ({ type:'material', id:m.id, name:m.name, unit:m.unit, amount:m.amount }));
+}
+
+function reservedItemsForExperiment(e) {
+  if (!e) return [];
+  if (e.stockReserved === true) return normalizeExpItems(e.reservedItems || e.consumed || expItems(e));
+  const status = e.status || 'final';
+  if (status === 'final') return normalizeExpItems((e.consumed && e.consumed.length) ? e.consumed : expItems(e));
+  return normalizeExpItems(e.consumed || []); // old drafts were not deducted
+}
+
+function itemAvailable(item) {
+  if (item.type === 'material') { const m = state.materials.find(x => x.id === item.id); return m ? Number(m.stock || 0) : 0; }
+  if (item.type === 'tissue') { const t = state.tissues.find(x => x.id === item.id); return t ? Number(t.qty || 0) : 0; }
+  if (item.type === 'cellline') { const c = state.celllines.find(x => x.id === item.id); return c ? Number(c.vials || 0) : 0; }
+  if (item.type === 'pdxtissue') { const p = state.pdxmodels.find(x => x.id === item.id); return p && p.tissues ? Number(p.tissues[item.sub] || 0) : 0; }
+  return 0;
+}
+
+function availableIncludingCurrentReservation(item) {
+  const own = editingOriginalReservedItems.find(x => expItemKey(x) === expItemKey(item));
+  return +(itemAvailable(item) + Number(own?.amount || 0)).toFixed(4);
+}
+
+function appendExpSelectedRow(item) {
   const wrap = document.getElementById('exp-material-rows');
-  const rowId = Date.now();
+  if (!wrap || !item) return null;
+  const key = expItemKey(item);
+  const existing = [...wrap.querySelectorAll('.exp-selected-row')].find(r => r.dataset.itemValue === key);
+  if (existing) { existing.querySelector('input')?.focus(); return existing; }
+  const row = document.createElement('div');
+  row.className = 'exp-selected-row';
+  row.dataset.itemValue = key;
+  row.dataset.itemName = item.name || '';
+  row.innerHTML = `<div class="exp-selected-name"><div>${escHtml(item.name)}</div><div class="exp-selected-meta">Available for this experiment: ${availableIncludingCurrentReservation(item)} ${escHtml(item.unit || '')}</div></div>`
+    + `<input class="exp-item-amount" type="number" min="0.0001" step="any" placeholder="Amount" aria-label="Amount of ${escHtml(item.name)}" style="${EXP_ITEM_INPUT}" />`
+    + `<button type="button" aria-label="Remove ${escHtml(item.name)}" onclick="removeExpItemRow(this)" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:19px;line-height:1">×</button>`;
+  row.querySelector('input').value = item.amount > 0 ? item.amount : '';
+  wrap.appendChild(row);
+  return row;
+}
+
+window.removeExpItemRow = function(button) {
+  button.closest('.exp-selected-row')?.remove();
+  renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+};
+
+window.addExpItemByValue = function(value) {
+  const item = expItemFromValue(value);
+  if (!item) { alert('This inventory item is no longer available. Refresh the page and try again.'); return; }
+  appendExpSelectedRow(item);
+  renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+};
+
+function pickerItemButton(item, extraMeta = '') {
+  const key = expItemKey(item);
+  const selected = [...document.querySelectorAll('#exp-material-rows .exp-selected-row')].some(r => r.dataset.itemValue === key);
+  const available = availableIncludingCurrentReservation(item);
+  const unavailable = available <= 0;
+  return `<button type="button" class="exp-picker-item" ${(selected || unavailable) ? 'disabled' : ''} onclick="addExpItemByValue('${escHtml(key)}')"><span>${escHtml(item.name)}</span><span style="font-size:11px;color:var(--text3);white-space:nowrap">${selected ? 'Added' : unavailable ? 'Out of stock' : `${available} ${escHtml(item.unit || '')}${extraMeta ? ' · ' + escHtml(extraMeta) : ''}`}</span></button>`;
+}
+
+window.renderExpItemPicker = function(searchTerm) {
+  const wrap = document.getElementById('exp-item-picker');
+  if (!wrap) return;
+  const term = String(searchTerm || '').trim().toLowerCase();
+
+  // Search names first. Hidden metadata (catalog, clone, purpose, location, etc.)
+  // is used only when no item name matches, so a query such as "Ab1" does not
+  // unexpectedly show every antibody whose unseen catalog number starts with ab1.
+  const candidateItems = [
+    ...state.materials.map(m => expItemFromValue(`material:${m.id}`)),
+    ...state.tissues.map(t => expItemFromValue(`tissue:${t.id}`)),
+    ...state.celllines.map(c => expItemFromValue(`cellline:${c.id}`))
+  ].filter(Boolean);
+  state.pdxmodels.forEach(p => Object.entries(p.tissues || {}).forEach(([sub, qty]) => {
+    if (Number(qty) <= 0) return;
+    const item = expItemFromValue(`pdxtissue:${p.id}:${sub}`);
+    if (item) candidateItems.push(item);
+  }));
+
+  const nameMatches = item => String(item?.name || '').toLowerCase().includes(term);
+  const hasNameMatch = Boolean(term) && candidateItems.some(nameMatches);
+  const matches = (item, extra='') => {
+    if (!term) return true;
+    if (hasNameMatch) return nameMatches(item);
+    return [item.name, item.unit, extra].filter(Boolean).join(' ').toLowerCase().includes(term);
+  };
+
   const byCategory = {};
   state.materials.forEach(m => {
-    const cat = m.category||'Other';
-    if (!byCategory[cat]) byCategory[cat] = [];
-    byCategory[cat].push(m);
+    const item = expItemFromValue(`material:${m.id}`);
+    const searchable = [m.category, m.company, m.catalog, m.location, m.abPurpose, m.abClone, m.abConjugate, m.priSequence].filter(Boolean).join(' ');
+    if (!item || !matches(item, searchable)) return;
+    (byCategory[m.category || 'Other'] ||= []).push({ item, searchable });
   });
-  const opts = Object.entries(byCategory).map(([cat, mats]) =>
-    `<optgroup label="${cat}">${mats.map(m => {
-      const qty = m.category === 'Primer' ? `${m.priVolume||0} µL` : `${m.stock} ${m.unit}`;
-      return `<option value="mat:${m.id}">${m.name} (${qty})</option>`;
-    }).join('')}</optgroup>`
+  const materialCategories = Object.entries(byCategory).sort(([a],[b]) => a.localeCompare(b)).map(([category, rows]) =>
+    `<details class="exp-picker-category" ${term ? 'open' : ''}><summary><span>${escHtml(category)}</span><span>${rows.length}</span></summary><div class="exp-picker-items">${rows.sort((a,b)=>a.item.name.localeCompare(b.item.name)).map(({item}) => pickerItemButton(item)).join('')}</div></details>`
   ).join('');
-  const row = document.createElement('div');
-  row.style.cssText = 'display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center';
-  row.innerHTML = `<select style="background:var(--surface2);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;color:var(--text);outline:none"><option value="">Select material…</option>${opts}</select><input type="number" min="0" step="0.1" placeholder="Amt" style="background:var(--surface2);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 10px;font-size:13px;color:var(--text);width:70px;outline:none" /><button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;line-height:1">×</button>`;
-  wrap.appendChild(row);
+
+  const tissues = state.tissues.map(t => expItemFromValue(`tissue:${t.id}`)).filter(Boolean).filter(i => {
+    const t = state.tissues.find(x => x.id === i.id);
+    return matches(i, [t?.type, t?.freezer, t?.shelf].filter(Boolean).join(' '));
+  });
+  const celllines = state.celllines.map(c => expItemFromValue(`cellline:${c.id}`)).filter(Boolean).filter(i => {
+    const c = state.celllines.find(x => x.id === i.id);
+    return matches(i, [c?.origin, c?.location].filter(Boolean).join(' '));
+  });
+  const pdxTissues = [];
+  state.pdxmodels.forEach(p => Object.entries(p.tissues || {}).forEach(([sub, qty]) => {
+    if (Number(qty) <= 0) return;
+    const item = expItemFromValue(`pdxtissue:${p.id}:${sub}`);
+    if (item && matches(item, `${p.origName || ''} ${PDX_TIS_LABELS[sub] || sub}`)) pdxTissues.push(item);
+  }));
+
+  const sections = [];
+  if (term && !hasNameMatch) {
+    sections.push('<div style="padding:8px 10px;font-size:11px;color:var(--text3);border-bottom:0.5px solid var(--border)">No item names matched. Showing matches found in catalog numbers, clones, purposes, companies, locations, or other item details.</div>');
+  }
+  if (materialCategories) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>Materials</span><span>${Object.values(byCategory).reduce((n,a)=>n+a.length,0)}</span></summary>${materialCategories}</details>`);
+  if (tissues.length) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>Tissues & samples</span><span>${tissues.length}</span></summary><div class="exp-picker-items">${tissues.sort((a,b)=>a.name.localeCompare(b.name)).map(i=>pickerItemButton(i)).join('')}</div></details>`);
+  if (celllines.length) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>Cell lines</span><span>${celllines.length}</span></summary><div class="exp-picker-items">${celllines.sort((a,b)=>a.name.localeCompare(b.name)).map(i=>pickerItemButton(i)).join('')}</div></details>`);
+  if (pdxTissues.length) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>PDX tissues</span><span>${pdxTissues.length}</span></summary><div class="exp-picker-items">${pdxTissues.sort((a,b)=>a.name.localeCompare(b.name)).map(i=>pickerItemButton(i)).join('')}</div></details>`);
+
+  const resultSections = sections.filter(Boolean);
+  const hasResults = materialCategories || tissues.length || celllines.length || pdxTissues.length;
+  wrap.innerHTML = hasResults ? resultSections.join('') : `<div style="padding:14px;font-size:13px;color:var(--text3)">${term ? 'No inventory items match this search.' : 'No inventory items are available yet.'}</div>`;
+};
+
+// Legacy aliases retained for older inline calls/bookmarks.
+window.addExpItemRow = function(type) {
+  const first = type === 'material' ? state.materials[0] && `material:${state.materials[0].id}`
+    : type === 'tissue' ? state.tissues[0] && `tissue:${state.tissues[0].id}`
+    : type === 'cellline' ? state.celllines[0] && `cellline:${state.celllines[0].id}` : null;
+  if (first) window.addExpItemByValue(first);
+};
+window.addExpMaterialRow = function() { return window.addExpItemRow('material'); };
+
+function parseExpRow(row) {
+  if (!row) return null;
+  const base = expItemFromValue(row.dataset.itemValue);
+  if (!base) return null;
+  const amount = Number(row.querySelector('.exp-item-amount, input[type="number"]')?.value);
+  return { ...base, amount };
+}
+
+function collectExperimentItems() {
+  const rows = [...document.querySelectorAll('#exp-material-rows .exp-selected-row')];
+  const items = rows.map(row => {
+    const item = parseExpRow(row);
+    if (!item) throw new Error('One selected inventory item no longer exists. Remove it and select an available item.');
+    if (!Number.isFinite(item.amount) || item.amount <= 0) throw new Error(`Enter an amount greater than zero for “${item.name}”.`);
+    return item;
+  });
+  return normalizeExpItems(items);
+}
+
+
+function experimentItemTypeLabel(item) {
+  if (item.type === 'material') {
+    const material = state.materials.find(x => x.id === item.id);
+    return material?.category ? `Material · ${material.category}` : 'Material';
+  }
+  if (item.type === 'tissue') return 'Tissue / sample';
+  if (item.type === 'cellline') return 'Cell line';
+  if (item.type === 'pdxtissue') return 'PDX tissue';
+  return 'Inventory item';
+}
+
+function cleanReviewRichHtml(html) {
+  const host = document.createElement('div');
+  host.innerHTML = html || '';
+  const allowed = new Set(['B','STRONG','I','EM','U','UL','OL','LI','P','DIV','BR','H4']);
+  [...host.querySelectorAll('*')].forEach(el => {
+    if (!allowed.has(el.tagName)) {
+      el.replaceWith(...el.childNodes);
+      return;
+    }
+    [...el.attributes].forEach(attr => el.removeAttribute(attr.name));
+  });
+  return host.innerHTML.trim();
+}
+
+function reviewHtmlHasContent(html) {
+  const host = document.createElement('div');
+  host.innerHTML = html || '';
+  return Boolean(host.textContent.trim());
+}
+
+function formatReviewDate(value) {
+  if (!value) return 'Not provided';
+  const d = new Date(`${value}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
+}
+
+function reviewField(label, value, full = false) {
+  return `<div class="exp-review-field${full ? ' full' : ''}"><div class="exp-review-label">${escHtml(label)}</div><div class="exp-review-value">${value ? escHtml(value) : '<span class="exp-review-empty">Not provided</span>'}</div></div>`;
+}
+
+function reviewTextSection(title, html, { rich = false } = {}) {
+  const cleaned = rich ? cleanReviewRichHtml(html) : '';
+  const hasValue = rich ? reviewHtmlHasContent(cleaned) : Boolean(String(html || '').trim());
+  const value = hasValue ? (rich ? cleaned : escHtml(String(html).trim()).replace(/\n/g, '<br>')) : '<span class="exp-review-empty">Not provided</span>';
+  return `<div class="exp-review-section"><div class="exp-review-section-title">${escHtml(title)}</div><div class="exp-review-section-body">${value}</div></div>`;
+}
+
+function renderExperimentFinalizationReview(exp) {
+  const reviewWrap = document.getElementById('exp-review-content');
+  const titleEl = document.getElementById('exp-review-title');
+  const confirmBtn = document.getElementById('exp-review-confirm-btn');
+  const items = normalizeExpItems(exp.items);
+  const attachments = exp.driveLinks || [];
+  const itemRows = items.length
+    ? `<div class="exp-review-items">${items.map(item => `<div class="exp-review-item"><div><div class="exp-review-item-name">${escHtml(item.name)}</div><div class="exp-review-item-type">${escHtml(experimentItemTypeLabel(item))}</div></div><div class="exp-review-item-amount">${escHtml(item.amount)} ${escHtml(item.unit || '')}</div></div>`).join('')}</div>`
+    : '<span class="exp-review-empty">No inventory items selected.</span>';
+  const fileRows = attachments.length
+    ? `<div class="exp-review-files">${attachments.map(file => `<div class="exp-review-file"><span>📄 ${escHtml(file?.name || String(file))}</span><span style="color:var(--text3);white-space:nowrap">attached</span></div>`).join('')}</div>`
+    : '<span class="exp-review-empty">No attachments.</span>';
+
+  titleEl.textContent = 'Review before finalizing';
+  confirmBtn.textContent = 'Finalize experiment';
+  reviewWrap.innerHTML = `
+    <div class="exp-review-notice">Review the complete experiment record below. Inventory was already reserved when the draft was saved, so finalizing will not deduct it again.</div>
+    <div class="exp-review-grid">
+      ${reviewField('Experiment title', exp.title, true)}
+      ${reviewField('Date', formatReviewDate(exp.date))}
+      ${reviewField('Performed by', exp.user)}
+      ${reviewField('Project', exp.projectName || 'No project assigned', true)}
+      ${reviewField('Current status', 'Draft')}
+      ${reviewField('Items selected', String(items.length))}
+    </div>
+    <div class="exp-review-section"><div class="exp-review-section-title">Items used</div><div class="exp-review-section-body">${itemRows}</div></div>
+    ${reviewTextSection('Protocol / method', exp.protocol, { rich:true })}
+    ${reviewTextSection('Result', exp.result, { rich:true })}
+    ${reviewTextSection('Next steps', exp.next, { rich:true })}
+    ${reviewTextSection('Notes', exp.notes)}
+    <div class="exp-review-section"><div class="exp-review-section-title">Attachments</div><div class="exp-review-section-body">${fileRows}</div></div>`;
+  document.getElementById('modal-experiment-review').style.display = 'flex';
+  document.querySelector('#modal-experiment-review .modal')?.scrollTo({ top:0, behavior:'instant' });
+}
+
+window.closeExperimentFinalizationReview = function() {
+  document.getElementById('modal-experiment-review').style.display = 'none';
+  pendingExperimentFinalization = null;
+};
+
+window.confirmExperimentFinalization = async function() {
+  const exp = pendingExperimentFinalization;
+  if (!exp) return;
+  const confirmBtn = document.getElementById('exp-review-confirm-btn');
+  const originalLabel = confirmBtn.textContent;
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Finalizing…';
+  try {
+    await mergeDoc('experiments', exp.id, {
+      status:'final',
+      stockReserved:true,
+      finalizedAt:Date.now()
+    });
+    document.getElementById('modal-experiment-review').style.display = 'none';
+    pendingExperimentFinalization = null;
+    try { await markChange(`Finalized experiment "${exp.title}" — inventory was already reserved`); }
+    catch (logErr) { console.warn('Experiment finalized, but activity log failed:', logErr); showToast('Experiment finalized; activity log failed'); }
+  } catch (err) {
+    console.error(err);
+    showUploadError(err.message || 'The experiment could not be finalized.');
+  } finally {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = originalLabel;
+  }
+};
+
+async function persistExperimentDraft(exp, previousReservedItems, mode, button) {
+  const btn = button || document.querySelector('#modal-add-experiment .btn-primary');
+  const originalLabel = btn?.textContent || '';
+  let saved = false;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = mode === 'edit' ? 'Saving changes…' : 'Saving draft…';
+  }
+  try {
+    await commitExperimentReservation(exp, previousReservedItems);
+    const links = await uploadPendingFiles('exp-drive-links', 'experiments/' + exp.id);
+    if (links.length) await mergeDoc('experiments', exp.id, { driveLinks:arrayUnion(...links) });
+    saved = true;
+
+    closeModal('modal-add-experiment');
+    resetExperimentModal();
+
+    try {
+      await markChange(mode === 'edit'
+        ? `Updated experiment "${exp.title}" — inventory reservation adjusted`
+        : `Saved draft experiment "${exp.title}" — reserved ${exp.items.length} inventory item(s)`);
+    } catch (logErr) {
+      console.warn('Experiment saved, but activity log failed:', logErr);
+      showToast(mode === 'edit' ? 'Experiment updated; activity log failed' : 'Draft saved; activity log failed');
+    }
+  } catch (err) {
+    console.error(err);
+    showUploadError(err.message || (mode === 'edit' ? 'The experiment changes could not be saved.' : 'The draft could not be saved.'));
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      if (saved) {
+        btn.textContent = 'Save as draft';
+        btn.onclick = window.addExperiment;
+      } else {
+        btn.textContent = originalLabel;
+      }
+    }
+  }
+}
+
+function loadExpItemRows(items) {
+  const wrap = document.getElementById('exp-material-rows');
+  wrap.innerHTML = '';
+  (items || []).forEach(saved => {
+    const current = expItemFromValue(expItemValue(saved));
+    const item = current ? { ...current, amount:saved.amount } : { ...saved };
+    appendExpSelectedRow(item);
+  });
+  renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+}
+
+function inventoryDocInfo(item) {
+  if (item.type === 'material') return { collection:'materials', id:item.id };
+  if (item.type === 'tissue') return { collection:'tissues', id:item.id };
+  if (item.type === 'cellline') return { collection:'celllines', id:item.id };
+  if (item.type === 'pdxtissue') return { collection:'pdxmodels', id:item.id };
+  throw new Error(`Unknown inventory item type: ${item.type}`);
+}
+function qtyFromInventoryDoc(data, item) {
+  if (item.type === 'material') return Number(data.stock || 0);
+  if (item.type === 'tissue') return Number(data.qty || 0);
+  if (item.type === 'cellline') return Number(data.vials || 0);
+  if (item.type === 'pdxtissue') return Number((data.tissues || {})[item.sub] || 0);
+  return 0;
+}
+function setQtyInInventoryDoc(data, item, qty, logMeta) {
+  const clean = Math.max(0, +Number(qty).toFixed(4));
+  if (item.type === 'material') {
+    data.stock = clean;
+    if (data.category === 'Primer') data.priVolume = clean;
+    data.log = data.log || [];
+    if (logMeta.delta !== 0) data.log.unshift({
+      ts: new Date().toLocaleString(), user: logMeta.user,
+      action: logMeta.delta > 0 ? 'consume' : 'restore', amount: Math.abs(logMeta.delta),
+      note: `Experiment reservation: ${logMeta.title}`
+    });
+    data.log = data.log.slice(0, 50);
+  } else if (item.type === 'tissue') data.qty = clean;
+  else if (item.type === 'cellline') data.vials = clean;
+  else if (item.type === 'pdxtissue') { data.tissues = { ...(data.tissues || {}), [item.sub]: clean }; }
+}
+
+async function commitExperimentReservation(expData, previousReservedItems, { deleteRecord = false } = {}) {
+  const desiredNext = deleteRecord ? [] : normalizeExpItems(expData.items);
+  const expRef = doc(db, 'experiments', expData.id);
+
+  const lowStockMaterials = await runTransaction(db, async transaction => {
+    // Read the latest experiment record inside the transaction. This prevents two users
+    // editing the same experiment from double-restoring or double-reserving stock.
+    const expSnap = await transaction.get(expRef);
+    const previous = expSnap.exists()
+      ? reservedItemsForExperiment(expSnap.data())
+      : normalizeExpItems(previousReservedItems);
+
+    const all = new Map();
+    previous.forEach(i => all.set(expItemKey(i), { item:i, oldAmount:i.amount, newAmount:0 }));
+    desiredNext.forEach(i => {
+      const key = expItemKey(i);
+      const row = all.get(key) || { item:i, oldAmount:0, newAmount:0 };
+      row.item = i; row.newAmount = i.amount; all.set(key, row);
+    });
+    const changes = [...all.values()]
+      .map(x => ({ ...x, delta:+(x.newAmount - x.oldAmount).toFixed(4) }))
+      .filter(x => Math.abs(x.delta) > 1e-9);
+
+    const docGroups = new Map();
+    changes.forEach(change => {
+      const info = inventoryDocInfo(change.item);
+      const key = `${info.collection}/${info.id}`;
+      if (!docGroups.has(key)) docGroups.set(key, { ...info, changes:[] });
+      docGroups.get(key).changes.push(change);
+    });
+
+    const snapshots = new Map();
+    for (const [key, group] of docGroups) {
+      const refDoc = doc(db, group.collection, group.id);
+      const snap = await transaction.get(refDoc);
+      if (!snap.exists()) throw new Error('An inventory item used by this experiment was deleted. Refresh and select another item.');
+      snapshots.set(key, { refDoc, data:{ ...snap.data() } });
+    }
+
+    const low = [];
+    for (const [key, group] of docGroups) {
+      const entry = snapshots.get(key);
+      for (const change of group.changes) {
+        const current = qtyFromInventoryDoc(entry.data, change.item);
+        if (change.delta > current + 1e-9) {
+          throw new Error(`Not enough stock for “${change.item.name}”. Need ${change.delta} more ${change.item.unit || ''}, but only ${current} is available.`);
+        }
+        setQtyInInventoryDoc(entry.data, change.item, current - change.delta, { delta:change.delta, title:expData.title, user:expData.user });
+      }
+      transaction.set(entry.refDoc, entry.data);
+      const newlyConsumed = group.changes.some(change => change.delta > 0);
+      if (newlyConsumed && group.collection === 'materials' && Number(entry.data.stock || 0) <= Number(entry.data.lowAt || 0)) low.push(entry.data);
+    }
+
+    if (deleteRecord) transaction.delete(expRef);
+    else if (expSnap.exists()) transaction.set(expRef, expData, { merge:true });
+    else transaction.set(expRef, expData);
+    return low;
+  });
+  lowStockMaterials.forEach(sendLowStockAlert);
+}
+
+function resetExperimentModal() {
+  ['exp-title','exp-date','exp-user','exp-notes','exp-item-search'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  ['exp-protocol','exp-result','exp-next'].forEach(id => window.rteClear(id));
+  document.getElementById('exp-material-rows').innerHTML = '';
+  document.getElementById('exp-drive-links').innerHTML = '';
+  pendingFiles['exp-drive-links'] = [];
+  editingExperimentId = null;
+  editingOriginalReservedItems = [];
+  renderExpItemPicker('');
+}
+
+window.finalizeExperiment = function(id) {
+  const e = state.experiments.find(x => x.id === id); if (!e) return;
+  if ((e.status || 'final') === 'final') return;
+  if (!e.stockReserved && expItems(e).length) {
+    alert('This is an older draft whose stock was not reserved. Open it, verify the items and amounts, and save it once before finalizing.');
+    return;
+  }
+  pendingExperimentFinalization = e;
+  renderExperimentFinalizationReview(e);
 };
 
 window.addExperiment = async function() {
   const title = document.getElementById('exp-title').value.trim();
   if (!title) { document.getElementById('exp-title').focus(); return; }
-  const matRows = [...document.querySelectorAll('#exp-material-rows > div')].map(row => {
-    const sel = row.querySelector('select');
-    const amt = row.querySelector('input');
-    const val = sel.value;
-    if (!val) return null;
-    const id = val.startsWith('mat:') ? val.slice(4) : val;
-    const m = state.materials.find(x => x.id === id);
-    if (!m) return null;
-    const unit = m.category === 'Primer' ? 'µL' : m.unit;
-    return { id: m.id, name: m.name, unit, amount: parseFloat(amt.value)||0 };
-  }).filter(Boolean);
+  let items;
+  try { items = collectExperimentItems(); }
+  catch (err) { alert(err.message); return; }
   const projId = document.getElementById('exp-project').value;
-  const projName = projId ? (state.projects.find(p=>p.id===projId)||{}).name||'' : '';
+  const id = (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`);
   const exp = {
-    id: Date.now()+'',
-    title,
+    id, title,
     date: document.getElementById('exp-date').value,
     user: document.getElementById('exp-user').value.trim() || currentUser,
     projectId: projId,
-    projectName: projName,
-    materials: matRows,
-    protocol: window.rteGet('exp-protocol'),
-    result: window.rteGet('exp-result'),
-    next: window.rteGet('exp-next'),
-    notes: document.getElementById('exp-notes').value.trim(),
-    driveLinks: collectDriveLinks('exp-drive-links')
+    projectName: projId ? (state.projects.find(p=>p.id===projId)||{}).name || '' : '',
+    items, status:'draft', stockReserved:true, reservedItems:items.map(i=>({...i})), consumed:[],
+    protocol: window.rteGet('exp-protocol'), result: window.rteGet('exp-result'), next: window.rteGet('exp-next'),
+    notes: document.getElementById('exp-notes').value.trim(), driveLinks:[], createdAt:Date.now()
   };
-  // Upload files first
-  exp.driveLinks = await uploadPendingFiles('exp-drive-links', 'experiments/' + exp.id);
-  await saveDoc('experiments', exp.id, exp);
+  await persistExperimentDraft(exp, [], 'create', document.querySelector('#modal-add-experiment .btn-primary'));
+};
 
-  // Auto-subtract materials from stock
-  for (const row of matRows) {
-    if (row.amount <= 0) continue;
-    const mat = state.materials.find(x => x.id === row.id);
-    if (!mat) continue;
-    const prev = mat.stock;
-    mat.stock = Math.max(0, parseFloat((mat.stock - row.amount).toFixed(4)));
-    if (mat.category === 'Primer') mat.priVolume = mat.stock;
-    if (mat.stock <= mat.lowAt) sendLowStockAlert(mat);
-    mat.log = mat.log || [];
-    mat.log.unshift({ ts: new Date().toLocaleString(), user: exp.user, action: 'consume', amount: row.amount, note: `Experiment: ${title}` });
-    await saveDoc('materials', mat.id, mat);
-  }
-
-  closeModal('modal-add-experiment');
-  ['exp-title','exp-date','exp-user','exp-notes'].forEach(id => document.getElementById(id).value = '');
-  ['exp-protocol','exp-result','exp-next'].forEach(id => window.rteClear(id));
-  document.getElementById('exp-material-rows').innerHTML = '';
-  document.getElementById('exp-drive-links').innerHTML = '';
-  await markChange(`Logged experiment "${title}" — stock updated for ${matRows.length} material(s)`);
+window.openNewExperiment = function() {
+  pendingExperimentFinalization = null;
+  document.getElementById('modal-experiment-review').style.display = 'none';
+  resetExperimentModal();
+  document.getElementById('exp-date').valueAsDate = new Date();
+  populateExpProjectSelect();
+  populateExpPerformer();
+  const btn = document.querySelector('#modal-add-experiment .btn-primary');
+  btn.textContent = 'Save as draft'; btn.onclick = window.addExperiment;
+  openModal('modal-add-experiment');
 };
 
 window.renderExperiments = function() {
   const el = document.getElementById('experiments-list');
   if (!el) return;
-  const filterUser = document.getElementById('exp-filter-user')?.value||'';
-  const filterProject = document.getElementById('exp-filter-project')?.value||'';
-  const sort = document.getElementById('exp-sort')?.value||'date-desc';
-  const search = (document.getElementById('exp-filter-search')?.value||'').toLowerCase();
+  const filterUser = document.getElementById('exp-filter-user')?.value || '';
+  const filterProject = document.getElementById('exp-filter-project')?.value || '';
+  const sort = document.getElementById('exp-sort')?.value || 'date-desc';
+  const search = (document.getElementById('exp-filter-search')?.value || '').toLowerCase();
   let exps = [...state.experiments];
   if (filterUser) exps = exps.filter(e => e.user === filterUser);
   if (filterProject) exps = exps.filter(e => e.projectId === filterProject);
-  if (search) exps = exps.filter(e => e.title.toLowerCase().includes(search) || (e.protocol||'').toLowerCase().includes(search) || (e.result||'').toLowerCase().includes(search));
-  if (sort === 'date-desc') exps.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  if (search) exps = exps.filter(e => [e.title,e.protocol,e.result,e.notes,e.projectName].filter(Boolean).join(' ').toLowerCase().includes(search));
+  if (sort === 'date-desc') exps.sort((a,b) => (b.date||'').localeCompare(a.date||'') || Number(b.createdAt||0)-Number(a.createdAt||0));
   else if (sort === 'date-asc') exps.sort((a,b) => (a.date||'').localeCompare(b.date||''));
   else if (sort === 'user-asc') exps.sort((a,b) => (a.user||'').localeCompare(b.user||''));
   else if (sort === 'project-asc') exps.sort((a,b) => (a.projectName||'').localeCompare(b.projectName||''));
-  // update project filter options
   const projSel = document.getElementById('exp-filter-project');
   if (projSel) {
     const cur = projSel.value;
-    projSel.innerHTML = '<option value="">All projects</option>' + state.projects.map(p => `<option value="${p.id}"${p.id===cur?' selected':''}>${p.name}</option>`).join('');
+    projSel.innerHTML = '<option value="">All projects</option>' + state.projects.map(p => `<option value="${escHtml(p.id)}"${p.id===cur?' selected':''}>${escHtml(p.name)}</option>`).join('');
   }
-  if (exps.length === 0) { el.innerHTML = '<div class="empty">No experiments found.</div>'; return; }
+  if (!exps.length) { el.innerHTML = '<div class="empty">No experiments found.</div>'; return; }
   el.innerHTML = exps.map(e => {
-    const matList = (e.materials||[]).map(m => `<span class="tag">${m.name} ${m.amount} ${m.unit}</span>`).join('');
+    const status = e.status || 'final';
+    const items = expItems(e);
+    const reserved = reservedItemsForExperiment(e);
+    const legacyUnreserved = status === 'draft' && !e.stockReserved && items.length > 0;
+    const itemList = items.map(it => `<span class="tag">${escHtml(it.name)} · ${Number(it.amount)||0} ${escHtml(it.unit||'')}</span>`).join('');
+    const statusBadge = status === 'final' ? '<span class="badge badge-ok">Final</span>' : '<span class="badge badge-low">Draft</span>';
     return `<div class="item-card">
-      <div class="item-card-header" onclick="toggleCard('exp-${e.id}')">
-        <div>
-          <div class="item-card-title">${e.title}</div>
-          <div class="item-card-meta">${e.date||'No date'} · ${e.user}${e.projectName?' · '+e.projectName:''}</div>
-        </div>
-        <span class="chevron" id="chev-exp-${e.id}">⌄</span>
+      <div class="item-card-header" onclick="toggleCard('exp-${escHtml(e.id)}')">
+        <div><div class="item-card-title">${escHtml(e.title)} ${statusBadge}</div><div class="item-card-meta">${escHtml(e.date||'No date')} · ${escHtml(e.user||'?')}${e.projectName?' · '+escHtml(e.projectName):''}</div></div>
+        <span class="chevron" id="chev-exp-${escHtml(e.id)}">⌄</span>
       </div>
-      <div class="item-card-body" id="exp-${e.id}">
-        ${matList?`<div style="margin-bottom:10px"><div class="exp-section-label">Materials used</div><div style="margin-top:4px">${matList}</div></div>`:''}
+      <div class="item-card-body" id="exp-${escHtml(e.id)}">
+        ${legacyUnreserved?'<div style="background:var(--warn-light);color:var(--warn);padding:8px 10px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:10px">Older draft: its stock has not been reserved yet. Edit and save it once to reserve the listed items.</div>':''}
+        ${itemList?`<div style="margin-bottom:10px"><div class="exp-section-label">Items used ${reserved.length?'(reserved from stock)':'(not reserved)'}</div><div style="margin-top:4px">${itemList}</div></div>`:''}
         ${e.protocol?`<div style="margin-bottom:10px"><div class="exp-section-label">Protocol</div><div style="font-size:13px;color:var(--text2);margin-top:4px;line-height:1.6">${e.protocol}</div></div>`:''}
         ${e.result?`<div style="margin-bottom:10px"><div class="exp-section-label">Result</div><div class="result-box" style="line-height:1.6">${e.result}</div></div>`:''}
         ${e.next?`<div style="margin-bottom:10px"><div class="exp-section-label">Next steps</div><div style="font-size:13px;color:var(--text2);margin-top:4px;line-height:1.6">${e.next}</div></div>`:''}
-        ${e.notes?`<div style="margin-bottom:10px"><div class="exp-section-label">Notes</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${e.notes}</div></div>`:''}
-        ${e.activityLog&&e.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${e.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
+        ${e.notes?`<div style="margin-bottom:10px"><div class="exp-section-label">Notes</div><div style="font-size:13px;color:var(--text2);margin-top:4px">${escHtml(e.notes)}</div></div>`:''}
         ${renderDriveLinks(e.driveLinks, {collection:'experiments', docId:e.id})}
         <div class="action-row">
-          <button class="btn-sm" onclick="editExperiment('${e.id}')">Edit</button>
-          <button class="btn-sm danger" onclick="deleteExperiment('${e.id}')">Delete</button>
+          ${status !== 'final' ? `<button class="btn-sm" style="background:var(--accent);color:#fff" onclick="finalizeExperiment('${escHtml(e.id)}')">Finalize</button>` : ''}
+          <button class="btn-sm" onclick="editExperiment('${escHtml(e.id)}')">Edit</button>
+          <button class="btn-sm danger" onclick="deleteExperiment('${escHtml(e.id)}')">Delete</button>
         </div>
       </div>
     </div>`;
   }).join('');
-}
+};
 
 window.deleteExperiment = function(id) {
-  const e = state.experiments.find(e => e.id === id);
-  showConfirm(`Delete experiment "${e.title}"?`, async () => { await removeDoc('experiments', id); await markChange(`Deleted experiment "${e.title}"`); });
+  const e = state.experiments.find(x => x.id === id); if (!e) return;
+  const reserved = reservedItemsForExperiment(e);
+  if (!reserved.length) {
+    showConfirm(`Delete “${e.title}”?`, async () => {
+      await removeDoc('experiments', e.id);
+      try { await markChange(`Deleted experiment "${e.title}" — no reserved stock to restore`); }
+      catch (logErr) { console.warn('Experiment deleted, but activity log failed:', logErr); showToast('Experiment deleted; activity log failed'); }
+    });
+    return;
+  }
+
+  pendingDeleteExperimentId = id;
+  const rows = reserved.map(item => `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:0.5px solid var(--border)"><span>${escHtml(item.name)}</span><strong style="white-space:nowrap;color:var(--text)">${escHtml(item.amount)} ${escHtml(item.unit || '')}</strong></div>`).join('');
+  document.getElementById('delete-exp-choice-content').innerHTML = `
+    <div style="font-weight:500;color:var(--text);margin-bottom:8px">Delete “${escHtml(e.title)}”?</div>
+    <div style="margin-bottom:6px">The following quantities were deducted when this experiment draft was saved:</div>
+    <div style="background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:2px 10px">${rows}</div>`;
+  document.getElementById('modal-delete-experiment-choice').style.display = 'flex';
+};
+
+window.closeDeleteExperimentChoice = function() {
+  document.getElementById('modal-delete-experiment-choice').style.display = 'none';
+  pendingDeleteExperimentId = null;
+};
+
+window.confirmDeleteExperiment = async function(restoreStock) {
+  const id = pendingDeleteExperimentId;
+  const e = state.experiments.find(x => x.id === id);
+  if (!e) { window.closeDeleteExperimentChoice(); return; }
+  const reserved = reservedItemsForExperiment(e);
+  const restoreBtn = document.getElementById('delete-exp-restore-btn');
+  const keepBtn = document.getElementById('delete-exp-keep-btn');
+  restoreBtn.disabled = true;
+  keepBtn.disabled = true;
+  const originalRestore = restoreBtn.textContent;
+  const originalKeep = keepBtn.textContent;
+  if (restoreStock) restoreBtn.textContent = 'Deleting and restoring…';
+  else keepBtn.textContent = 'Deleting…';
+
+  try {
+    if (restoreStock) {
+      await commitExperimentReservation({ ...e, id:e.id, items:[] }, reserved, { deleteRecord:true });
+    } else {
+      const expRef = doc(db, 'experiments', e.id);
+      await runTransaction(db, async transaction => {
+        const snap = await transaction.get(expRef);
+        if (snap.exists()) transaction.delete(expRef);
+      });
+    }
+    document.getElementById('modal-delete-experiment-choice').style.display = 'none';
+    pendingDeleteExperimentId = null;
+    try {
+      await markChange(restoreStock
+        ? `Deleted experiment "${e.title}" — reserved stock restored`
+        : `Deleted experiment "${e.title}" — reserved quantities kept deducted`);
+    } catch (logErr) {
+      console.warn('Experiment deleted, but activity log failed:', logErr);
+      showToast('Experiment deleted; activity log failed');
+    }
+  } catch (err) {
+    console.error(err);
+    showUploadError(err.message || 'The experiment could not be deleted.');
+  } finally {
+    restoreBtn.disabled = false;
+    keepBtn.disabled = false;
+    restoreBtn.textContent = originalRestore;
+    keepBtn.textContent = originalKeep;
+  }
 };
 
 // ── PDX Models ───────────────────────────────────────────────────────────────
@@ -1716,6 +2625,8 @@ window.addPDXModel = async function() {
 
 window.deletePDXModel = function(id) {
   const p = state.pdxmodels.find(p => p.id === id);
+  const linked = state.experiments.filter(e => reservedItemsForExperiment(e).some(it => it.type === 'pdxtissue' && it.id === id));
+  if (linked.length) { alert(`This PDX model has tissue reserved by ${linked.length} experiment(s). Delete or edit those experiments first.`); return; }
   showConfirm(`Delete PDX model "${p.name}"?`, async () => {
     await removeDoc('pdxmodels', id);
     await markChange(`Deleted PDX model "${p.name}"`);
@@ -1737,12 +2648,18 @@ window.renderPDXModels = function() {
   const el = document.getElementById('pdxmodels-list');
   if (!el) return;
   const search = (document.getElementById('pdx-filter-search')?.value||'').toLowerCase();
-  let models = state.pdxmodels;
+  const sort = document.getElementById('pdx-sort')?.value || 'name-asc';
+  let models = [...state.pdxmodels];
   if (search) models = models.filter(p =>
     (p.name||'').toLowerCase().includes(search) ||
     (p.origName||'').toLowerCase().includes(search) ||
     (p.miceIds||'').toLowerCase().includes(search)
   );
+  models.sort((a,b) =>
+    sort === 'name-desc' ? (b.name||'').localeCompare(a.name||'') :
+    sort === 'year-desc' ? String(b.year||'').localeCompare(String(a.year||'')) :
+    sort === 'year-asc'  ? String(a.year||'').localeCompare(String(b.year||'')) :
+                           (a.name||'').localeCompare(b.name||''));
   if (models.length === 0) { el.innerHTML = '<div class="empty">No PDX models found.</div>'; return; }
   el.innerHTML = models.map(p => {
     const tisRows = PDX_TISSUES.filter(t => p.tissues&&p.tissues[t]>0).map(t => `
@@ -1823,22 +2740,50 @@ window.editMaterial = function(id) {
     document.getElementById('mat-pla-insert-size').value = m.plaInsertSize||'';
     document.getElementById('mat-pla-promoter').value = m.plaPromoter||'';
     document.getElementById('mat-pla-resistance').value = m.plaResistance||'';
+    document.getElementById('mat-pla-selection').value = m.plaSelection||'';
+    document.getElementById('mat-pla-conc').value = m.plaConc||'';
     document.getElementById('mat-pla-addgene-id').value = m.plaAddgeneId||'';
     document.getElementById('mat-pla-from').value = m.plaFrom||'';
     document.getElementById('mat-pla-link-addgene').value = m.plaLinkAddgene||'';
     document.getElementById('mat-pla-link-benchling').value = m.plaLinkBenchling||'';
     document.getElementById('mat-pla-celllines').value = m.plaCelllines||'';
   }
+  if (m.category === 'Antibody') {
+    document.getElementById('mat-ab-company').value = m.company||'';
+    document.getElementById('mat-ab-catalog').value = m.catalog||'';
+    document.getElementById('mat-ab-link').value = m.link||'';
+    document.getElementById('mat-ab-arrival').value = m.arrival||'';
+    document.getElementById('mat-ab-expiry').value = m.expiry||'';
+    document.getElementById('mat-ab-clone').value = m.abClone||'';
+    document.getElementById('mat-ab-conjugate').value = m.abConjugate||'';
+    document.getElementById('mat-ab-reactivity').value = m.abReactivity||'';
+    document.getElementById('mat-ab-host').value = m.abHost||'';
+    document.getElementById('mat-ab-clonality').value = m.abClonality||'';
+    document.getElementById('mat-ab-synonym').value = m.abSynonym||'';
+    document.getElementById('mat-ab-retrieval').value = m.abRetrieval||'';
+    document.getElementById('mat-ab-dilution').value = m.abDilution||'';
+    document.getElementById('mat-ab-lot').value = m.abLot||'';
+    document.getElementById('mat-ab-status').value = m.abStatus||'';
+    document.getElementById('mat-ab-source').value = m.abSource||'';
+    populateAbPurposeSelect(m.abPurpose||'');
+  }
   openModal('modal-add-material');
   const btn = document.querySelector('#modal-add-material .btn-primary');
   btn.textContent = 'Save changes';
   btn.onclick = async () => {
     const cat = document.getElementById('mat-cat').value;
+    if (cat === 'Antibody' && !readAbPurpose()) {
+      alert('Please select an antibody purpose or add a new purpose.');
+      document.getElementById('mat-ab-purpose').focus();
+      return;
+    }
     m.name = document.getElementById('mat-name').value.trim();
     m.category = cat === 'Other' ? (document.getElementById('mat-cat-other').value.trim()||'Other') : cat;
-    m.stock = parseFloat(document.getElementById('mat-stock').value)||m.stock;
-    m.unit = document.getElementById('mat-unit').value.trim()||m.unit;
-    m.lowAt = parseFloat(document.getElementById('mat-low').value)||m.lowAt;
+    const stockValue = parseFloat(document.getElementById('mat-stock').value);
+    const lowValue = parseFloat(document.getElementById('mat-low').value);
+    if (Number.isFinite(stockValue)) m.stock = stockValue;
+    m.unit = document.getElementById('mat-unit').value.trim() || m.unit;
+    if (Number.isFinite(lowValue)) m.lowAt = lowValue;
     m.location = document.getElementById('mat-loc').value.trim();
     m.arrival = document.getElementById('mat-arrival').value;
     m.expiry = document.getElementById('mat-expiry').value;
@@ -1870,11 +2815,32 @@ window.editMaterial = function(id) {
       m.plaInsertSize = parseFloat(document.getElementById('mat-pla-insert-size').value)||0;
       m.plaPromoter = document.getElementById('mat-pla-promoter').value.trim();
       m.plaResistance = document.getElementById('mat-pla-resistance').value.trim();
+      m.plaSelection = document.getElementById('mat-pla-selection').value.trim();
+      m.plaConc = document.getElementById('mat-pla-conc').value.trim();
       m.plaAddgeneId = document.getElementById('mat-pla-addgene-id').value.trim();
       m.plaFrom = document.getElementById('mat-pla-from').value.trim();
       m.plaLinkAddgene = document.getElementById('mat-pla-link-addgene').value.trim();
       m.plaLinkBenchling = document.getElementById('mat-pla-link-benchling').value.trim();
       m.plaCelllines = document.getElementById('mat-pla-celllines').value.trim();
+    }
+    if (cat === 'Antibody') {
+      m.company = document.getElementById('mat-ab-company').value.trim();
+      m.catalog = document.getElementById('mat-ab-catalog').value.trim();
+      m.link = document.getElementById('mat-ab-link').value.trim();
+      m.arrival = document.getElementById('mat-ab-arrival').value;
+      m.expiry = document.getElementById('mat-ab-expiry').value;
+      m.abClone = document.getElementById('mat-ab-clone').value.trim();
+      m.abConjugate = document.getElementById('mat-ab-conjugate').value.trim();
+      m.abReactivity = document.getElementById('mat-ab-reactivity').value.trim();
+      m.abHost = document.getElementById('mat-ab-host').value.trim();
+      m.abClonality = document.getElementById('mat-ab-clonality').value.trim();
+      m.abSynonym = document.getElementById('mat-ab-synonym').value.trim();
+      m.abRetrieval = document.getElementById('mat-ab-retrieval').value.trim();
+      m.abDilution = document.getElementById('mat-ab-dilution').value.trim();
+      m.abLot = document.getElementById('mat-ab-lot').value.trim();
+      m.abStatus = document.getElementById('mat-ab-status').value.trim();
+      m.abSource = document.getElementById('mat-ab-source').value.trim();
+      m.abPurpose = readAbPurpose();
     }
     await saveDoc('materials', m.id, m);
     closeModal('modal-add-material');
@@ -1884,35 +2850,49 @@ window.editMaterial = function(id) {
 };
 
 window.editExperiment = function(id) {
-  const e = state.experiments.find(x => x.id === id);
-  if (!e) return;
-  document.getElementById('exp-title').value = e.title||'';
-  document.getElementById('exp-date').value = e.date||'';
-  document.getElementById('exp-user').value = e.user||'';
-  window.rteSet('exp-protocol', e.protocol||'');
-  window.rteSet('exp-result', e.result||'');
-  window.rteSet('exp-next', e.next||'');
-  document.getElementById('exp-notes').value = e.notes||'';
+  const original = state.experiments.find(x => x.id === id);
+  if (!original) return;
+  const e = { ...original };
+  editingExperimentId = id;
+  editingOriginalReservedItems = reservedItemsForExperiment(original);
+  document.getElementById('exp-title').value = e.title || '';
+  document.getElementById('exp-date').value = e.date || '';
+  document.getElementById('exp-user').value = e.user || '';
+  document.getElementById('exp-item-search').value = '';
+  window.rteSet('exp-protocol', e.protocol || '');
+  window.rteSet('exp-result', e.result || '');
+  window.rteSet('exp-next', e.next || '');
+  document.getElementById('exp-notes').value = e.notes || '';
   populateExpProjectSelect();
-  document.getElementById('exp-project').value = e.projectId||'';
+  document.getElementById('exp-project').value = e.projectId || '';
+  loadExpItemRows(expItems(e));
+  document.getElementById('exp-drive-links').innerHTML = renderDriveLinks(e.driveLinks || []);
   openModal('modal-add-experiment');
   const btn = document.querySelector('#modal-add-experiment .btn-primary');
-  btn.textContent = 'Save changes';
+  btn.textContent = 'Save changes & update reservation';
   btn.onclick = async () => {
-    e.title = document.getElementById('exp-title').value.trim();
-    e.date = document.getElementById('exp-date').value;
-    e.user = document.getElementById('exp-user').value.trim()||currentUser;
-    e.protocol = window.rteGet('exp-protocol');
-    e.result = window.rteGet('exp-result');
-    e.next = window.rteGet('exp-next');
-    e.notes = document.getElementById('exp-notes').value.trim();
+    const title = document.getElementById('exp-title').value.trim();
+    if (!title) { document.getElementById('exp-title').focus(); return; }
+    let items;
+    try { items = collectExperimentItems(); }
+    catch (err) { alert(err.message); return; }
     const projId = document.getElementById('exp-project').value;
-    e.projectId = projId;
-    e.projectName = projId ? (state.projects.find(p=>p.id===projId)||{}).name||'' : '';
-    await saveDoc('experiments', e.id, e);
-    closeModal('modal-add-experiment');
-    btn.textContent = 'Save experiment'; btn.onclick = window.addExperiment;
-    await markChange(`Updated experiment "${e.title}"`);
+    const updated = {
+      id:e.id,
+      title,
+      date: document.getElementById('exp-date').value,
+      user: document.getElementById('exp-user').value.trim() || currentUser,
+      projectId: projId,
+      projectName: projId ? (state.projects.find(p=>p.id===projId)||{}).name || '' : '',
+      items,
+      status:e.status || 'draft',
+      stockReserved:true,
+      reservedItems:items.map(i=>({...i})),
+      protocol: window.rteGet('exp-protocol'), result: window.rteGet('exp-result'), next: window.rteGet('exp-next'),
+      notes: document.getElementById('exp-notes').value.trim(),
+      updatedAt:Date.now()
+    };
+    await persistExperimentDraft(updated, editingOriginalReservedItems, 'edit', btn);
   };
 };
 
@@ -2040,19 +3020,47 @@ window.toggleCard = function(id) {
   if (chev) chev.classList.toggle('open');
 };
 
-window.showConfirm = function(msg, onYes) {
-  document.getElementById('confirm-msg').textContent = msg;
+window.showConfirm = function(msg, onYes, options = {}) {
+  const el = document.getElementById('confirm-msg');
+  const actionBtn = document.getElementById('confirm-action-btn');
+  el.style.whiteSpace = 'pre-line';
+  el.textContent = msg;
   _confirmCallback = onYes;
+
+  const isDanger = options.danger !== false;
+  actionBtn.textContent = options.confirmText || 'Delete';
+  actionBtn.style.background = isDanger ? 'var(--danger)' : 'var(--accent)';
+  actionBtn.style.borderColor = isDanger ? 'var(--danger)' : 'var(--accent)';
+  actionBtn.disabled = false;
+
   document.getElementById('modal-confirm').style.display = 'flex';
 };
-window.doConfirm = function(yes) {
-  document.getElementById('modal-confirm').style.display = 'none';
-  if (yes && _confirmCallback) _confirmCallback();
+window.doConfirm = async function(yes) {
+  const modal = document.getElementById('modal-confirm');
+  const actionBtn = document.getElementById('confirm-action-btn');
+  const callback = _confirmCallback;
   _confirmCallback = null;
+
+  if (!yes || !callback) {
+    modal.style.display = 'none';
+    return;
+  }
+
+  actionBtn.disabled = true;
+  try {
+    await callback();
+    modal.style.display = 'none';
+  } catch (err) {
+    console.error(err);
+    actionBtn.disabled = false;
+    showUploadError(err.message || 'The action could not be completed.');
+  }
 };
 
 window.deleteMaterial = function(id) {
   const mat = state.materials.find(m => m.id === id);
+  const linked = state.experiments.filter(e => reservedItemsForExperiment(e).some(it => it.type === 'material' && it.id === id));
+  if (linked.length) { alert(`This material is reserved by ${linked.length} experiment(s). Delete or edit those experiments first so their stock can be restored correctly.`); return; }
   showConfirm(`Remove "${mat.name}" from inventory?`, async () => {
     await removeDoc('materials', id);
     for (const p of state.projects) { p.materialIds = (p.materialIds||[]).filter(mid => mid !== id); await saveDoc('projects', p.id, p); }
@@ -2074,6 +3082,8 @@ window.decrementTissue = async function(id) {
 };
 window.deleteTissue = function(id) {
   const t = state.tissues.find(t => t.id === id);
+  const linked = state.experiments.filter(e => reservedItemsForExperiment(e).some(it => it.type === 'tissue' && it.id === id));
+  if (linked.length) { alert(`This sample is reserved by ${linked.length} experiment(s). Delete or edit those experiments first.`); return; }
   showConfirm(`Remove "${t.name}" from storage?`, async () => { await removeDoc('tissues', id); await markChange(`Removed sample "${t.name}"`); });
 };
 
