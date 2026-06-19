@@ -229,7 +229,7 @@
     <div class="tab" onclick="switchTab('materials')">Materials</div>
     <div class="tab" onclick="switchTab('tissues')">Tissues</div>
     <div class="tab" onclick="switchTab('celllines')">Cell Lines</div>
-    <div class="tab" onclick="switchTab('pdxmodels')">PDX Models</div>
+    <div class="tab" onclick="switchTab('pdxmodels')">Mice</div>
     <div class="tab" onclick="switchTab('toorder')">To Order</div>
 
   </div>
@@ -261,12 +261,7 @@
     </div>
     <div class="filter-bar">
       <input type="search" id="mat-search" placeholder="Search name, company, catalog, location, sequence…" oninput="renderMaterials()" style="flex:1;min-width:180px" />
-      <select id="mat-filter-cat" onchange="renderMaterials()">
-        <option value="">All categories</option>
-        <option>Antibody</option><option>Reagent</option><option>Kit</option>
-        <option>Medium</option><option>Plastics</option><option>Primer</option>
-        <option>Plasmid</option><option>Other</option>
-      </select>
+      <input type="hidden" id="mat-filter-cat" value="" />
       <select id="mat-filter-purpose" onchange="renderMaterials()">
         <option value="">All purposes</option>
         <option>FACS</option><option>MACSima</option><option>IF panel</option><option>Other</option>
@@ -278,6 +273,7 @@
         <option value="stock-desc">Highest stock</option>
       </select>
     </div>
+    <div id="mat-cat-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
     <div id="materials-list"><div class="empty">No materials yet.</div></div>
   </div>
 
@@ -345,19 +341,18 @@
   <!-- PDX MODELS TAB -->
   <div class="tab-content" id="tab-pdxmodels">
     <div class="section-header">
-      <div class="section-title">PDX Models</div>
-      <button class="btn-add" onclick="openModal('modal-add-pdx')">＋ Add PDX model</button>
+      <div class="section-title">Mice</div>
+      <button class="btn-add" onclick="openNewMouse()">＋ Add mouse</button>
     </div>
     <div class="filter-bar">
-      <input type="text" id="pdx-filter-search" placeholder="Search by model name, ID…" oninput="renderPDXModels()" style="flex:1" />
+      <input type="text" id="pdx-filter-search" placeholder="Search by mouse ID, PDX model…" oninput="renderPDXModels()" style="flex:1" />
       <select id="pdx-sort" onchange="renderPDXModels()">
-        <option value="name-asc">Name A→Z</option>
-        <option value="name-desc">Name Z→A</option>
-        <option value="year-desc">Newest year</option>
-        <option value="year-asc">Oldest year</option>
+        <option value="animal">Animal ID</option>
+        <option value="model">PDX model</option>
+        <option value="location">Location</option>
       </select>
     </div>
-    <div id="pdxmodels-list"><div class="empty">No PDX models yet.</div></div>
+    <div id="pdxmodels-list"><div class="empty">No mice yet.</div></div>
   </div>
 
   <!-- TO ORDER TAB -->
@@ -819,19 +814,15 @@
 <!-- MODAL: ADD PDX MODEL -->
 <div class="modal-backdrop" id="modal-add-pdx" style="display:none">
   <div class="modal">
-    <div class="modal-title">Add PDX model</div>
+    <div class="modal-title">Add mouse</div>
     <div style="display:flex;flex-direction:column;gap:12px">
 
       <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em">Model identity</div>
       <div class="field-row">
-        <div class="field"><label>PDX model name</label><input type="text" id="pdx-name" placeholder="e.g. PDX14" /></div>
-        <div class="field"><label>Original nomenclature</label><input type="text" id="pdx-orig-name" placeholder="e.g. BC-PDX-001" /></div>
+        <div class="field"><label>Mice ID</label><input type="text" id="pdx-name" placeholder="e.g. 823" /></div>
+        <div class="field"><label>PDX model</label><input type="text" id="pdx-model" placeholder="e.g. HCI010" /></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <div class="field"><label>Mice IDs</label><input type="text" id="pdx-mice-ids" placeholder="e.g. M01, M02, M03" /></div>
-        <div class="field"><label>Number of mice</label><input type="number" id="pdx-mice-count" placeholder="e.g. 5" min="0" /></div>
-        <div class="field"><label>Year</label><input type="number" id="pdx-year" placeholder="e.g. 2024" min="2000" max="2100" /></div>
-      </div>
+      <div class="field"><label>Year</label><input type="number" id="pdx-year" placeholder="e.g. 2024" min="2000" max="2100" /></div>
       <div class="field"><label>Location</label><input type="text" id="pdx-location" placeholder="e.g. Vivarium Room 3, Cage B2" /></div>
 
       <div class="sep"></div>
@@ -862,7 +853,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-pdx')">Cancel</button>
-      <button class="btn-primary" style="flex:2" onclick="addPDXModel()">Save PDX model</button>
+      <button class="btn-primary" style="flex:2" onclick="addPDXModel()">Save mouse</button>
     </div>
   </div>
 </div>
@@ -1443,9 +1434,30 @@ window.renderToOrder = function() {
 };
 window.copyOrderList = function() { navigator.clipboard?.writeText(window._orderList || '').then(() => showToast('Order list copied to clipboard')); };
 
+const MAT_CATEGORIES = ['Antibody','Reagent','Kit','Medium','Plastics','Primer','Plasmid','Other'];
+window.setMatCategory = function(cat) {
+  const inp = document.getElementById('mat-filter-cat');
+  if (inp) inp.value = cat;
+  renderMaterials();
+};
+function renderMatCatChips() {
+  const wrap = document.getElementById('mat-cat-chips');
+  if (!wrap) return;
+  const cur = document.getElementById('mat-filter-cat')?.value || '';
+  const counts = {};
+  state.materials.forEach(m => { counts[m.category||'Other'] = (counts[m.category||'Other']||0) + 1; });
+  const chip = (val, label, n) => {
+    const active = cur === val;
+    return `<button type="button" onclick="setMatCategory('${val}')" style="padding:5px 12px;border-radius:999px;border:0.5px solid var(--border-strong);font-size:13px;cursor:pointer;background:${active?'var(--accent)':'var(--surface2)'};color:${active?'#fff':'var(--text2)'}">${label}${n!=null?` <span style="opacity:.7">${n}</span>`:''}</button>`;
+  };
+  wrap.innerHTML = chip('', 'All', state.materials.length)
+    + MAT_CATEGORIES.map(c => chip(c, c, counts[c]||0)).join('');
+}
+
 window.renderMaterials = function() {
   const el = document.getElementById('materials-list');
   if (!el) return;
+  renderMatCatChips();
   const filterCat = document.getElementById('mat-filter-cat')?.value || '';
   const purpose = document.getElementById('mat-filter-purpose')?.value || '';
   const pf = document.getElementById('mat-filter-purpose');
@@ -2598,8 +2610,10 @@ const PDX_TISSUES = ['pt','lung','kidney','ovary','pb','bm','brain','liver','ft'
 const PDX_TISSUE_LABELS = { pt:'PT', lung:'Lung', kidney:'Kidney', ovary:'Ovary', pb:'PB', bm:'BM', brain:'Brain', liver:'Liver', ft:'FT', ag:'AG' };
 
 window.addPDXModel = async function() {
-  const name = document.getElementById('pdx-name').value.trim();
-  if (!name) { document.getElementById('pdx-name').focus(); return; }
+  const miceId = document.getElementById('pdx-name').value.trim().replace(/^#/, '');
+  if (!miceId) { document.getElementById('pdx-name').focus(); return; }
+  const model = document.getElementById('pdx-model').value.trim();
+  const name = model ? `${miceId} (${model})` : miceId;
   const tissues = {};
   PDX_TISSUES.forEach(t => {
     const val = parseInt(document.getElementById(`pdx-tis-${t}`).value)||0;
@@ -2608,9 +2622,10 @@ window.addPDXModel = async function() {
   const pdx = {
     id: Date.now()+'',
     name,
-    origName: document.getElementById('pdx-orig-name').value.trim(),
-    miceIds: document.getElementById('pdx-mice-ids').value.trim(),
-    miceCount: parseInt(document.getElementById('pdx-mice-count').value)||0,
+    miceId,
+    model,
+    origName: '',
+    miceIds: '',
     year: document.getElementById('pdx-year').value.trim(),
     location: document.getElementById('pdx-location').value.trim(),
     tissues,
@@ -2621,19 +2636,29 @@ window.addPDXModel = async function() {
   pdx.driveLinks = await uploadPendingFiles('pdx-drive-links', 'pdxmodels/' + pdx.id);
   await saveDoc('pdxmodels', pdx.id, pdx);
   closeModal('modal-add-pdx');
-  ['pdx-name','pdx-orig-name','pdx-mice-ids','pdx-mice-count','pdx-year','pdx-location','pdx-notes'].forEach(id => document.getElementById(id).value = '');
+  ['pdx-name','pdx-model','pdx-year','pdx-location','pdx-notes'].forEach(id => document.getElementById(id).value = '');
   PDX_TISSUES.forEach(t => document.getElementById(`pdx-tis-${t}`).value = '');
   document.getElementById('pdx-drive-links').innerHTML = '';
-  await markChange(`Added PDX model "${name}"`);
+  await markChange(`Added mouse "${name}"`);
+};
+
+window.openNewMouse = function() {
+  ['pdx-name','pdx-model','pdx-year','pdx-location','pdx-notes'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  PDX_TISSUES.forEach(t => { const el = document.getElementById(`pdx-tis-${t}`); if (el) el.value = ''; });
+  const dl = document.getElementById('pdx-drive-links'); if (dl) dl.innerHTML = '';
+  try { pendingFiles['pdx-drive-links'] = []; } catch (e) {}
+  const btn = document.querySelector('#modal-add-pdx .btn-primary');
+  if (btn) { btn.textContent = 'Save mouse'; btn.onclick = window.addPDXModel; }
+  openModal('modal-add-pdx');
 };
 
 window.deletePDXModel = function(id) {
   const p = state.pdxmodels.find(p => p.id === id);
   const linked = state.experiments.filter(e => reservedItemsForExperiment(e).some(it => it.type === 'pdxtissue' && it.id === id));
-  if (linked.length) { alert(`This PDX model has tissue reserved by ${linked.length} experiment(s). Delete or edit those experiments first.`); return; }
-  showConfirm(`Delete PDX model "${p.name}"?`, async () => {
+  if (linked.length) { alert(`This mouse has tissue reserved by ${linked.length} experiment(s). Delete or edit those experiments first.`); return; }
+  showConfirm(`Delete mouse "${p.name}"?`, async () => {
     await removeDoc('pdxmodels', id);
-    await markChange(`Deleted PDX model "${p.name}"`);
+    await markChange(`Deleted mouse "${p.name}"`);
   });
 };
 
@@ -2652,19 +2677,24 @@ window.renderPDXModels = function() {
   const el = document.getElementById('pdxmodels-list');
   if (!el) return;
   const search = (document.getElementById('pdx-filter-search')?.value||'').toLowerCase();
-  const sort = document.getElementById('pdx-sort')?.value || 'name-asc';
+  const sort = document.getElementById('pdx-sort')?.value || 'animal';
   let models = [...state.pdxmodels];
   if (search) models = models.filter(p =>
     (p.name||'').toLowerCase().includes(search) ||
     (p.origName||'').toLowerCase().includes(search) ||
-    (p.miceIds||'').toLowerCase().includes(search)
+    (p.model||'').toLowerCase().includes(search) ||
+    (p.miceId||'').toLowerCase().includes(search) ||
+    (p.miceIds||'').toLowerCase().includes(search) ||
+    (p.location||'').toLowerCase().includes(search)
   );
+  const animalKey = p => (p.miceId || p.name || '').replace(/^#/,'');
+  const modelKey = p => (p.model || p.origName || p.name || '');
+  const coll = { numeric: true, sensitivity: 'base' };
   models.sort((a,b) =>
-    sort === 'name-desc' ? (b.name||'').localeCompare(a.name||'') :
-    sort === 'year-desc' ? String(b.year||'').localeCompare(String(a.year||'')) :
-    sort === 'year-asc'  ? String(a.year||'').localeCompare(String(b.year||'')) :
-                           (a.name||'').localeCompare(b.name||''));
-  if (models.length === 0) { el.innerHTML = '<div class="empty">No PDX models found.</div>'; return; }
+    sort === 'model'    ? (modelKey(a).localeCompare(modelKey(b), undefined, coll) || animalKey(a).localeCompare(animalKey(b), undefined, coll)) :
+    sort === 'location' ? ((a.location||'').localeCompare(b.location||'', undefined, coll) || animalKey(a).localeCompare(animalKey(b), undefined, coll)) :
+                          animalKey(a).localeCompare(animalKey(b), undefined, coll));
+  if (models.length === 0) { el.innerHTML = '<div class="empty">No mice found.</div>'; return; }
   el.innerHTML = models.map(p => {
     const tisRows = PDX_TISSUES.filter(t => p.tissues&&p.tissues[t]>0).map(t => `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border)">
@@ -2686,6 +2716,10 @@ window.renderPDXModels = function() {
       </div>
       <div class="item-card-body" id="pdx-${p.id}">
         ${allTisZero ? '<div style="font-size:13px;color:var(--text3);margin-bottom:10px">No tissue samples recorded.</div>' : `<div style="margin-bottom:10px"><div class="exp-section-label">Tissue samples</div>${tisRows}</div>`}
+        ${(p.vials&&p.vials.length)?`<div style="margin-bottom:10px">
+          <div class="exp-section-label" style="cursor:pointer;user-select:none" onclick="toggleCard('pdxvials-${p.id}')">Freezer vials (${p.vials.length}) <span class="chevron" id="chev-pdxvials-${p.id}" style="font-size:11px">⌄</span></div>
+          <div id="pdxvials-${p.id}" style="display:none;margin-top:6px;font-size:12px;color:var(--text2);line-height:1.6">${p.vials.map(v=>'• '+String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;')).join('<br>')}</div>
+        </div>`:''}
         ${p.notes?`<div style="font-size:13px;color:var(--text2);margin-bottom:8px">${p.notes}</div>`:''}
         ${p.activityLog&&p.activityLog.length?`<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${p.activityLog.slice(0,3).map(l=>`<div class="log-entry"><span class="log-desc">${l.desc}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`).join('')}</div>`:''}
         ${renderDriveLinks(p.driveLinks, {collection:'pdxmodels', docId:p.id})}
@@ -2961,10 +2995,8 @@ window.editCellLine = function(id) {
 window.editPDXModel = function(id) {
   const p = state.pdxmodels.find(x => x.id === id);
   if (!p) return;
-  document.getElementById('pdx-name').value = p.name||'';
-  document.getElementById('pdx-orig-name').value = p.origName||'';
-  document.getElementById('pdx-mice-ids').value = p.miceIds||'';
-  document.getElementById('pdx-mice-count').value = p.miceCount||'';
+  document.getElementById('pdx-name').value = (p.miceId||'').replace(/^#/,'') || p.name || '';
+  document.getElementById('pdx-model').value = p.model||'';
   document.getElementById('pdx-year').value = p.year||'';
   document.getElementById('pdx-location').value = p.location||'';
   document.getElementById('pdx-notes').value = p.notes||'';
@@ -2975,10 +3007,10 @@ window.editPDXModel = function(id) {
   const btn = document.querySelector('#modal-add-pdx .btn-primary');
   btn.textContent = 'Save changes';
   btn.onclick = async () => {
-    p.name = document.getElementById('pdx-name').value.trim();
-    p.origName = document.getElementById('pdx-orig-name').value.trim();
-    p.miceIds = document.getElementById('pdx-mice-ids').value.trim();
-    p.miceCount = parseInt(document.getElementById('pdx-mice-count').value)||0;
+    const miceId = document.getElementById('pdx-name').value.trim().replace(/^#/,'');
+    p.miceId = miceId;
+    p.model = document.getElementById('pdx-model').value.trim();
+    p.name = p.model ? `${miceId} (${p.model})` : miceId;
     p.year = document.getElementById('pdx-year').value.trim();
     p.location = document.getElementById('pdx-location').value.trim();
     p.notes = document.getElementById('pdx-notes').value.trim();
@@ -2989,7 +3021,7 @@ window.editPDXModel = function(id) {
     });
     await saveDoc('pdxmodels', p.id, p);
     closeModal('modal-add-pdx');
-    btn.textContent = 'Save PDX model'; btn.onclick = window.addPDXModel;
+    btn.textContent = 'Save mouse'; btn.onclick = window.addPDXModel;
     await markChange(`Updated PDX model "${p.name}"`);
   };
 };
