@@ -251,6 +251,7 @@
     <div class="tab" onclick="switchTab('celllines')">Cell Lines</div>
     <div class="tab" onclick="switchTab('pdxmodels')">Mice</div>
     <div class="tab" onclick="switchTab('toorder')">To Order</div>
+    <div class="tab" onclick="switchTab('backup')">Backup</div>
 
   </div>
 
@@ -383,6 +384,32 @@
     <div id="toorder-list"><div class="empty">Loading…</div></div>
   </div>
 
+
+
+  <!-- BACKUP TAB -->
+  <div class="tab-content" id="tab-backup">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Backup inventory</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:4px">Download a full snapshot of the inventory data for safe keeping.</div>
+      </div>
+    </div>
+    <div class="item-card" style="max-width:760px">
+      <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:13px;color:var(--text2);line-height:1.55">
+          The backup is saved as a <b>JSON</b> file. JSON is best for this because it preserves the full structure of the inventory, including projects, experiments, materials, tissues, cell lines, mice/PDX records, activity log entries, and all custom fields.
+        </div>
+        <div id="backup-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px"></div>
+        <div class="action-row" style="margin-top:0">
+          <button type="button" class="btn-primary" style="width:auto" onclick="downloadFullInventoryBackup()">Download full backup (.json)</button>
+        </div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.5">
+          Recommended: download a backup after major inventory updates, before deleting many records, and at least once per month. Store the file somewhere outside the app, for example in ownCloud or a lab shared drive.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="tab-content" id="tab-activitylog" style="display:none"><div id="log-list"></div></div>
 </div>
 
@@ -393,14 +420,7 @@
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="field"><label>Project name</label><input type="text" id="proj-name" placeholder="e.g. PDX14 experiment" /></div>
       <div class="field"><label>Description (optional)</label><textarea id="proj-desc" placeholder="Brief notes..."></textarea></div>
-      <div class="field">
-        <label>📎 Attachments</label>
-        <div id="proj-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
-        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
-          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
-          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'proj-drive-links')">
-        </label>
-      </div>
+      <div id="proj-drive-links" style="display:none"></div>
       <div class="field">
         <label>Assign materials</label>
         <input type="text" id="proj-mat-search" placeholder="Search materials…" oninput="populateMaterialCheckboxes(this.value)" style="margin-bottom:6px;background:var(--surface2);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:8px 12px;font-size:14px;color:var(--text);width:100%;outline:none" />
@@ -605,14 +625,7 @@
         </div>
       </div>
 
-      <div class="field">
-        <label>📎 Attachments</label>
-        <div id="mat-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
-        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
-          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
-          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'mat-drive-links')">
-        </label>
-      </div>
+      <div id="mat-drive-links" style="display:none"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-material')">Cancel</button>
@@ -646,14 +659,7 @@
       </div>
       <div class="field"><label>Date frozen</label><input type="date" id="tis-date" /></div>
       <div class="field"><label>Notes</label><textarea id="tis-notes" placeholder="Passage, condition, etc."></textarea></div>
-      <div class="field">
-        <label>📎 Attachments</label>
-        <div id="tis-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
-        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
-          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
-          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'tis-drive-links')">
-        </label>
-      </div>
+      <div id="tis-drive-links" style="display:none"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-tissue')">Cancel</button>
@@ -678,14 +684,7 @@
       </div>
       <div class="field"><label>Origin / source</label><input type="text" id="cl-origin" placeholder="e.g. ATCC, in-house" /></div>
       <div class="field"><label>Notes (mycoplasma status, genotype…)</label><textarea id="cl-notes" placeholder="Optional"></textarea></div>
-      <div class="field">
-        <label>📎 Attachments</label>
-        <div id="cl-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
-        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
-          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
-          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'cl-drive-links')">
-        </label>
-      </div>
+      <div id="cl-drive-links" style="display:none"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-cellline')">Cancel</button>
@@ -756,14 +755,7 @@
         </div>
       </div>
       <div class="field"><label>Notes</label><textarea id="exp-notes" placeholder="Any other relevant info..."></textarea></div>
-      <div class="field">
-        <label>📎 Attachments</label>
-        <div id="exp-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
-        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
-          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
-          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'exp-drive-links')">
-        </label>
-      </div>
+      <div id="exp-drive-links" style="display:none"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-experiment')">Cancel</button>
@@ -863,14 +855,7 @@
 
       <div class="sep"></div>
       <div class="field"><label>Comments / Notes</label><textarea id="pdx-notes" placeholder="Passage number, treatment history, any relevant notes…"></textarea></div>
-      <div class="field">
-        <label>📎 Attachments</label>
-        <div id="pdx-drive-links" style="display:flex;flex-direction:column;gap:6px"></div>
-        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
-          <span class="btn-sm" style="pointer-events:none">＋ Attach file</span>
-          <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xlsx,.csv,.txt" style="display:none" onchange="handleFileInput(this,'pdx-drive-links')">
-        </label>
-      </div>
+      <div id="pdx-drive-links" style="display:none"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal('modal-add-pdx')">Cancel</button>
@@ -1056,6 +1041,62 @@ function pdxDisplayName(id) {
   const p = state.pdxmodels.find(x => x.id === id); return p ? p.name : id;
 }
 
+function pdxProjectModelValueFromRecord(p) {
+  if (!p) return '';
+
+  // Mouse/PDX records have existed in a few slightly different shapes across
+  // versions of this file. For the Projects modal we need the PDX model only,
+  // not the mouse/animal ID. Try all known model fields first.
+  const candidateKeys = [
+    'model', 'pdxModel', 'pdx_model', 'PDX_model', 'PDXModel',
+    'modelId', 'modelID', 'modelName', 'pdxModelId', 'pdx_model_id',
+    'origName', 'originalName', 'sourceModel', 'PDX model', 'PDX Model'
+  ];
+  for (const key of candidateKeys) {
+    const value = p[key];
+    if (value !== undefined && value !== null && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
+
+  // Fallback for display names such as "1696 (HCI010)".
+  const displayFields = [p.name, p.displayName, p.label, p.title].filter(Boolean).map(String);
+  for (const text of displayFields) {
+    const paren = text.match(/\(([^)]+)\)/);
+    if (paren && paren[1]) return paren[1].trim();
+  }
+
+  // Fallback for names where the model is embedded without parentheses.
+  // This avoids pure mouse IDs like "1696" but still catches HCI010/HCL010-like model IDs.
+  for (const text of displayFields) {
+    const modelLike = text.match(/\b(?:HCI|HCL|HBCx|PDX)[A-Za-z0-9_-]*\b/i);
+    if (modelLike) return modelLike[0].trim();
+  }
+
+  return '';
+}
+
+function pdxProjectModelName(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const p = state.pdxmodels.find(x => String(x.id) === raw);
+  if (p) return pdxProjectModelValueFromRecord(p) || raw;
+  return raw;
+}
+
+function uniqueProjectPDXModelOptions() {
+  const byKey = new Map();
+  (state.pdxmodels || []).forEach(p => {
+    const model = pdxProjectModelValueFromRecord(p);
+    if (!model) return;
+    const key = model.toLowerCase();
+    if (!byKey.has(key)) byKey.set(key, model);
+  });
+  return [...byKey.values()]
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric:true, sensitivity:'base' }))
+    .map(model => ({ id:model, label:model }));
+}
+
 function getExportSource(collection) {
   if (collection === 'toorder') return state.materials.filter(m => Number(m.stock || 0) <= Number(m.lowAt || 0));
   return state[collection] || [];
@@ -1071,7 +1112,7 @@ function exportRowsFor(collection, records) {
   if (collection === 'projects') return records.map(p => ({
     'Project name': p.name || '', 'Description': p.desc || '', 'Created': p.created || '', 'Created by': p.createdBy || '',
     'Materials': (p.materialIds || []).map(materialDisplayName).join('; '),
-    'PDX / mice': (p.pdxIds || []).map(pdxDisplayName).join('; '),
+    'PDX models': (p.pdxIds || []).map(pdxProjectModelName).filter(Boolean).join('; '),
     'Tissue samples': (p.tissueIds || []).map(tissueDisplayName).join('; '),
     'Cell lines': (p.celllineIds || []).map(celllineDisplayName).join('; '),
     'Attachments': attachmentNames(p.driveLinks)
@@ -1141,6 +1182,76 @@ window.exportSelectedRecords = function(collection) {
   showToast(`Exported ${records.length} record(s) as CSV.`);
 };
 
+
+
+// ── Full inventory backup ───────────────────────────────────────────────────
+const BACKUP_COLLECTIONS = ['projects', 'materials', 'tissues', 'celllines', 'experiments', 'pdxmodels', 'log'];
+
+function safeBackupCopy(value) {
+  return JSON.parse(JSON.stringify(value ?? null));
+}
+
+function getFullInventoryBackupObject() {
+  const collections = {};
+  const counts = {};
+  BACKUP_COLLECTIONS.forEach(name => {
+    const records = Array.isArray(state[name]) ? state[name] : [];
+    collections[name] = safeBackupCopy(records);
+    counts[name] = records.length;
+  });
+  return {
+    backupType: 'lab-inventory-full-backup',
+    backupVersion: 1,
+    exportedAt: new Date().toISOString(),
+    exportedBy: currentUser || '',
+    firebaseProjectId: firebaseConfig.projectId || '',
+    counts,
+    collections
+  };
+}
+
+function backupFileName() {
+  const now = new Date();
+  const stamp = now.toISOString().replace(/[:]/g, '-').replace(/\.\d{3}Z$/, 'Z');
+  return `lab_inventory_full_backup_${stamp}.json`;
+}
+
+window.downloadFullInventoryBackup = function() {
+  const backup = getFullInventoryBackupObject();
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = backupFileName();
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Full inventory backup downloaded.');
+};
+
+function renderBackupSummary() {
+  const el = document.getElementById('backup-summary');
+  if (!el) return;
+  const labels = {
+    projects: 'Projects',
+    materials: 'Materials',
+    tissues: 'Tissues',
+    celllines: 'Cell lines',
+    experiments: 'Experiments',
+    pdxmodels: 'Mice / PDX',
+    log: 'Activity log'
+  };
+  el.innerHTML = BACKUP_COLLECTIONS.map(name => {
+    const count = Array.isArray(state[name]) ? state[name].length : 0;
+    return `<div style="background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px">
+      <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.05em">${labels[name] || name}</div>
+      <div style="font-size:20px;font-weight:600;margin-top:4px;color:var(--text)">${count}</div>
+    </div>`;
+  }).join('');
+}
+
 // ── Firestore helpers ────────────────────────────────────────────────────────
 async function saveDoc(col, id, data) { await setDoc(doc(db, col, id), data); }
 async function mergeDoc(col, id, data) { await setDoc(doc(db, col, id), data, { merge:true }); }
@@ -1150,33 +1261,41 @@ async function removeDoc(col, id) { await deleteDoc(doc(db, col, id)); }
 function startListeners() {
   onSnapshot(collection(db, 'materials'), snap => {
     state.materials = snap.docs.map(d => d.data());
-    renderMaterials(); renderProjects(); renderToOrder(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+    renderMaterials(); renderProjects(); renderToOrder(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || ''); renderBackupSummary();
   });
   onSnapshot(collection(db, 'projects'), snap => {
     state.projects = snap.docs.map(d => d.data());
-    renderProjects();
+    renderProjects(); renderBackupSummary();
   });
   onSnapshot(collection(db, 'tissues'), snap => {
     state.tissues = snap.docs.map(d => d.data());
-    renderTissues(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+    renderTissues(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || ''); renderBackupSummary();
   });
   onSnapshot(collection(db, 'celllines'), snap => {
     state.celllines = snap.docs.map(d => d.data());
-    renderCellLines(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+    renderCellLines(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || ''); renderBackupSummary();
   });
   onSnapshot(collection(db, 'experiments'), snap => {
     state.experiments = snap.docs.map(d => d.data()).sort((a,b) => (b.date||'').localeCompare(a.date||''));
-    renderExperiments();
+    renderExperiments(); renderBackupSummary();
   });
 
   onSnapshot(collection(db, 'pdxmodels'), snap => {
     state.pdxmodels = snap.docs.map(d => d.data()).sort((a,b) => (a.name||'').localeCompare(b.name||''));
-    renderPDXModels(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+    renderPDXModels();
+    renderProjects();
+    renderExpItemPicker(document.getElementById('exp-item-search')?.value || '');
+    renderBackupSummary();
+    const projectModal = document.getElementById('modal-add-project');
+    if (projectModal && projectModal.style.display !== 'none') {
+      populateProjectPDXModelCheckboxes('proj-pdx-checkboxes');
+    }
   });
   onSnapshot(collection(db, 'log'), snap => {
     state.log = snap.docs.map(d => d.data()).sort((a,b) => b.ts - a.ts);
     renderLog();
     updateUserFilters();
+    renderBackupSummary();
   });
 }
 
@@ -1284,13 +1403,14 @@ window.switchTab = function(name) {
   });
   const content = document.getElementById('tab-' + name);
   if (content) content.classList.add('active');
+  if (name === 'backup') renderBackupSummary();
 };
 
 // ── Modals ────────────────────────────────────────────────────────────────────
 window.openModal = function(id) {
   if (id === 'modal-add-project') {
     populateMaterialCheckboxes();
-    populateProjectCheckboxes('proj-pdx-checkboxes', state.pdxmodels, m => m.name + (m.origName?' ('+m.origName+')':''));
+    populateProjectPDXModelCheckboxes('proj-pdx-checkboxes');
     populateProjectCheckboxes('proj-tissue-checkboxes', state.tissues, m => m.name + ' · ' + m.type + ' (' + m.qty + ' aliquots)');
     populateProjectCheckboxes('proj-cellline-checkboxes', state.celllines, m => m.name + ' P' + m.passage);
   }
@@ -1395,6 +1515,23 @@ function populateProjectCheckboxes(wrapperId, items, labelFn) {
     </label>`).join('');
 }
 
+function populateProjectPDXModelCheckboxes(wrapperId, selectedValues) {
+  const wrap = document.getElementById(wrapperId);
+  if (!wrap) return;
+  const options = uniqueProjectPDXModelOptions();
+  if (!options.length) {
+    wrap.innerHTML = '<div style="font-size:13px;color:var(--text3)">No PDX models added yet.</div>';
+    return;
+  }
+  const currentChecked = [...wrap.querySelectorAll('input:checked')].map(i => i.value);
+  const selected = new Set((selectedValues || currentChecked).map(pdxProjectModelName).filter(Boolean));
+  wrap.innerHTML = options.map(opt => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+      <input type="checkbox" value="${escHtml(opt.id)}" style="width:auto" ${selected.has(opt.id)?'checked':''}>
+      <span>${escHtml(opt.label)}</span>
+    </label>`).join('');
+}
+
 window.toggleMatGroup = function(cat) {
   const grp = document.getElementById('grp-' + cat);
   const chev = document.getElementById('grp-chev-' + cat);
@@ -1456,7 +1593,7 @@ window.renderProjects = function() {
       <div class="item-card-body" id="proj-${p.id}">
         ${p.desc ? `<div style="font-size:13px;color:var(--text2);margin-bottom:12px">${p.desc}</div>` : ''}
         <div class="exp-section-label">Assigned materials</div>${rows}
-        ${(p.pdxIds&&p.pdxIds.length)?`<div class="exp-section-label" style="margin-top:10px">PDX models</div>${p.pdxIds.map(id=>{const m=state.pdxmodels.find(x=>x.id===id);return m?`<div style="font-size:13px;color:var(--text2);padding:3px 0">${m.name}${m.origName?' ('+m.origName+')':''}</div>`:'';}).join('')}`:''}
+        ${(p.pdxIds&&p.pdxIds.length)?`<div class="exp-section-label" style="margin-top:10px">PDX models</div>${[...new Set(p.pdxIds.map(pdxProjectModelName).filter(Boolean))].map(name=>`<div style="font-size:13px;color:var(--text2);padding:3px 0">${escHtml(name)}</div>`).join('')}`:''}
         ${(p.tissueIds&&p.tissueIds.length)?`<div class="exp-section-label" style="margin-top:10px">Tissue samples</div>${p.tissueIds.map(id=>{const m=state.tissues.find(x=>x.id===id);return m?`<div style="font-size:13px;color:var(--text2);padding:3px 0">${m.name} · ${m.type} (${m.qty} aliquots)</div>`:'';}).join('')}`:''}
         ${(p.celllineIds&&p.celllineIds.length)?`<div class="exp-section-label" style="margin-top:10px">Cell lines</div>${p.celllineIds.map(id=>{const m=state.celllines.find(x=>x.id===id);return m?`<div style="font-size:13px;color:var(--text2);padding:3px 0">${m.name} P${m.passage}</div>`:'';}).join('')}`:''}
         ${renderDriveLinks(p.driveLinks, {collection:'projects', docId:p.id})}
@@ -2049,13 +2186,40 @@ window.toggleOther = function(selectId, inputId) {
 
 // ── File upload system ────────────────────────────────────────────────────────
 // pendingFiles: { containerId -> [{ file, name }] }
+// The app first tries Firebase Storage. If Storage is not enabled or the rules block
+// writing, it falls back to embedding very small files directly in the saved record.
 const pendingFiles = {};
+const EMBEDDED_FILE_FALLBACK_LIMIT = 750 * 1024; // Keep below Firestore's 1 MiB document limit.
+
+function formatBytes(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Could not read file.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function escapeAttr(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 // Called directly from onchange on the <input type="file"> in each modal
 window.handleFileInput = function(input, containerId) {
   if (!pendingFiles[containerId]) pendingFiles[containerId] = [];
   [...input.files].forEach(file => {
-    if (!pendingFiles[containerId].find(f => f.name === file.name)) {
+    if (!pendingFiles[containerId].find(f => f.name === file.name && f.file.size === file.size)) {
       pendingFiles[containerId].push({ file, name: file.name });
     }
   });
@@ -2073,7 +2237,7 @@ function renderPendingFiles(containerId) {
     const row = document.createElement('div');
     row.className = 'pending-file-row';
     row.style.cssText = 'display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:var(--radius-sm);padding:5px 10px;font-size:13px;color:var(--text2);';
-    row.innerHTML = `<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ${name}</span><span style="color:var(--text3);font-size:11px;white-space:nowrap">${(file.size/1024).toFixed(0)} KB</span><button type="button" title="Remove" onclick="removePendingFile('${containerId}','${name.replace(/'/g,"\\'")}',this.parentElement)" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;flex-shrink:0">×</button>`;
+    row.innerHTML = `<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ${escHtml(name)}</span><span style="color:var(--text3);font-size:11px;white-space:nowrap">${formatBytes(file.size)}</span><button type="button" title="Remove" onclick="removePendingFile('${escapeAttr(containerId)}','${escapeAttr(name)}',this.parentElement)" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;flex-shrink:0">×</button>`;
     wrap.appendChild(row);
   });
 }
@@ -2083,69 +2247,101 @@ window.removePendingFile = function(containerId, name, el) {
   if (el) el.remove();
 };
 
+async function tryFirebaseStorageUpload(file, name, storagePath) {
+  const safeName = Date.now() + '_' + name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const fullPath = `${storagePath}/${safeName}`;
+  const storageRef = ref(storage, fullPath);
+  await new Promise((resolve, reject) => {
+    const task = uploadBytesResumable(storageRef, file);
+    task.on('state_changed',
+      null,
+      (err) => reject(err),
+      () => resolve()
+    );
+  });
+  const url = await getDownloadURL(storageRef);
+  return {
+    name,
+    url,
+    path: fullPath,
+    mimeType: file.type || 'application/octet-stream',
+    size: file.size,
+    storage: 'firebase'
+  };
+}
+
+async function embedSmallFile(file, name) {
+  if (file.size > EMBEDDED_FILE_FALLBACK_LIMIT) {
+    throw new Error(`${name} is ${formatBytes(file.size)}. Embedded fallback supports files up to ${formatBytes(EMBEDDED_FILE_FALLBACK_LIMIT)}. Enable Firebase Storage for larger files.`);
+  }
+  const dataUrl = await fileToDataUrl(file);
+  return {
+    name,
+    dataUrl,
+    mimeType: file.type || 'application/octet-stream',
+    size: file.size,
+    storage: 'embedded',
+    addedAt: new Date().toISOString()
+  };
+}
+
 async function uploadPendingFiles(containerId, storagePath) {
   const files = pendingFiles[containerId] || [];
-  console.log('uploadPendingFiles called, files:', files.length, 'container:', containerId);
   if (files.length === 0) return [];
+
   const results = [];
-  showToast('Uploading files…');
+  showToast('Saving attachment(s)…');
+
   for (const {file, name} of files) {
-    console.log('Uploading file:', name, 'size:', file.size, 'to path:', storagePath);
     try {
-      const safeName = Date.now() + '_' + name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const fullPath = `${storagePath}/${safeName}`;
-      console.log('Storage ref path:', fullPath);
-      const storageRef = ref(storage, fullPath);
-      console.log('Storage ref created:', storageRef);
-      await new Promise((resolve, reject) => {
-        const task = uploadBytesResumable(storageRef, file);
-        task.on('state_changed',
-          (snapshot) => console.log('Upload progress:', snapshot.bytesTransferred, '/', snapshot.totalBytes),
-          (err) => { console.error('Upload error:', err.code, err.message); showUploadError('Upload failed: ' + err.code + ' — check Firebase Storage rules (must allow read, write: if true)'); reject(err); },
-          async () => {
-            console.log('Upload complete, getting URL...');
-            try {
-              const url = await getDownloadURL(task.snapshot.ref);
-              console.log('Download URL:', url);
-              results.push({ name, url, path: fullPath });
-              resolve();
-            } catch(err) {
-              console.error('getDownloadURL failed:', err.code, err.message);
-              showToast('URL error: ' + err.message);
-              reject(err);
-            }
-          }
-        );
-      });
-    } catch(err) {
-      console.error('Outer upload catch:', err.code, err.message);
-      showToast('Upload failed: ' + err.message);
+      // Preferred route: real Firebase Storage upload.
+      const uploaded = await tryFirebaseStorageUpload(file, name, storagePath);
+      results.push(uploaded);
+    } catch(storageErr) {
+      console.warn('Firebase Storage upload failed. Trying embedded fallback:', storageErr?.code || storageErr?.message || storageErr);
+      try {
+        const embedded = await embedSmallFile(file, name);
+        results.push(embedded);
+      } catch(embedErr) {
+        console.error('Attachment failed:', embedErr);
+        showUploadError('Attachment failed: ' + (embedErr.message || 'unknown error'));
+      }
     }
   }
+
   pendingFiles[containerId] = [];
   const el = document.getElementById(containerId);
   if (el) el.innerHTML = '';
-  console.log('Upload done, results:', results.length);
-  console.log('Upload results:', results);
-  if (results.length > 0) showToast(results.length + ' file(s) uploaded ✓');
+  if (results.length > 0) showToast(results.length + ' attachment(s) saved ✓');
   return results;
 }
 
 function collectDriveLinks(containerId) { return []; } // kept for compatibility
+
+function attachmentHref(file) {
+  if (!file) return '';
+  if (typeof file === 'string') return file;
+  return file.url || file.dataUrl || '';
+}
 
 function renderDriveLinks(links, { collection: col, docId } = {}) {
   if (!links || links.length === 0) return '';
   const canDelete = col && docId;
   return `<div style="margin-top:8px"><div class="exp-section-label">📎 Attachments</div><div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">${links.map((l, i) => {
     const name = l.name || l;
-    const url = l.url || l;
+    const href = attachmentHref(l);
     const path = l.path || '';
+    const size = l.size ? ` · ${formatBytes(l.size)}` : '';
     const deleteBtn = canDelete
-      ? `<button type="button" title="Remove attachment" onclick="deleteAttachment('${col}','${docId}',${i},'${path.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;flex-shrink:0" title="Remove">×</button>`
+      ? `<button type="button" title="Remove attachment" onclick="deleteAttachment('${col}','${docId}',${i},'${path.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;line-height:1;padding:0 2px;flex-shrink:0">×</button>`
       : '';
-    return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0">
-      <a href="${url}" target="_blank" rel="noopener" style="font-size:13px;color:var(--accent);text-decoration:none;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ${name}</a>
-      <a href="${url}" target="_blank" rel="noopener" title="Open file" style="font-size:13px;color:var(--text3);text-decoration:none;flex-shrink:0">↗</a>
+    if (!href) {
+      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:13px;color:var(--text2)">📄 ${escHtml(name)}${escHtml(size)} ${deleteBtn}</div>`;
+    }
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+      <span style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ${escHtml(name)}<span style="color:var(--text3)">${escHtml(size)}</span></span>
+      <a href="${escapeAttr(href)}" target="_blank" rel="noopener" title="Open file" style="font-size:12px;color:var(--accent);text-decoration:none;flex-shrink:0">Open</a>
+      <a href="${escapeAttr(href)}" download="${escapeAttr(name)}" title="Download file" style="font-size:12px;color:var(--accent);text-decoration:none;flex-shrink:0">Download</a>
       ${deleteBtn}
     </div>`;
   }).join('')}</div></div>`;
@@ -3395,7 +3591,7 @@ window.editExperiment = function(id) {
   populateExpProjectSelect();
   document.getElementById('exp-project').value = e.projectId || '';
   loadExpItemRows(expItems(e));
-  document.getElementById('exp-drive-links').innerHTML = renderDriveLinks(e.driveLinks || []);
+  document.getElementById('exp-drive-links').innerHTML = '';
   openModal('modal-add-experiment');
   const btn = document.querySelector('#modal-add-experiment .btn-primary');
   btn.textContent = 'Save changes & update reservation';
@@ -3617,16 +3813,32 @@ window.deleteTissue = function(id) {
 
 window.editProjectMaterials = function(projId) {
   const p = state.projects.find(p => p.id === projId);
+  if (!p) return;
   populateMaterialCheckboxes();
+  populateProjectPDXModelCheckboxes('proj-pdx-checkboxes', p.pdxIds || []);
+  populateProjectCheckboxes('proj-tissue-checkboxes', state.tissues, m => m.name + ' · ' + m.type + ' (' + m.qty + ' aliquots)');
+  populateProjectCheckboxes('proj-cellline-checkboxes', state.celllines, m => m.name + ' P' + m.passage);
   document.getElementById('proj-name').value = p.name;
   document.getElementById('proj-desc').value = p.desc||'';
-  setTimeout(() => { (p.materialIds||[]).forEach(mid => { const cb = document.querySelector(`#proj-material-checkboxes input[value="${mid}"]`); if (cb) cb.checked = true; }); }, 50);
+  setTimeout(() => {
+    (p.materialIds||[]).forEach(mid => { const cb = document.querySelector(`#proj-material-checkboxes input[value="${mid}"]`); if (cb) cb.checked = true; });
+    (p.tissueIds||[]).forEach(tid => { const cb = document.querySelector(`#proj-tissue-checkboxes input[value="${tid}"]`); if (cb) cb.checked = true; });
+    (p.celllineIds||[]).forEach(cid => { const cb = document.querySelector(`#proj-cellline-checkboxes input[value="${cid}"]`); if (cb) cb.checked = true; });
+  }, 50);
   document.getElementById('modal-add-project').style.display = 'flex';
   const btn = document.querySelector('#modal-add-project .btn-primary');
   btn.textContent = 'Save changes';
   btn.onclick = async () => {
     const checked = [...document.querySelectorAll('#proj-material-checkboxes input:checked')].map(c => c.value);
-    p.materialIds = checked; p.name = document.getElementById('proj-name').value.trim()||p.name; p.desc = document.getElementById('proj-desc').value.trim();
+    const checkedPdx = [...document.querySelectorAll('#proj-pdx-checkboxes input:checked')].map(c => c.value);
+    const checkedTissues = [...document.querySelectorAll('#proj-tissue-checkboxes input:checked')].map(c => c.value);
+    const checkedCelllines = [...document.querySelectorAll('#proj-cellline-checkboxes input:checked')].map(c => c.value);
+    p.materialIds = checked;
+    p.pdxIds = checkedPdx;
+    p.tissueIds = checkedTissues;
+    p.celllineIds = checkedCelllines;
+    p.name = document.getElementById('proj-name').value.trim()||p.name;
+    p.desc = document.getElementById('proj-desc').value.trim();
     await saveDoc('projects', p.id, p);
     closeModal('modal-add-project');
     btn.textContent = 'Create project'; btn.onclick = window.addProject;
