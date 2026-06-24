@@ -100,6 +100,16 @@
   .shelf-slot-content { font-size: 13px; font-weight: 500; margin-top: 4px; }
   .filter-bar { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
   .filter-bar select, .filter-bar input { background: var(--surface); border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 13px; color: var(--text); outline: none; }
+  .select-toolbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--surface); border:0.5px solid var(--border); border-radius:var(--radius); padding:8px 10px; margin-bottom:12px; }
+  .select-toolbar-label { display:flex; align-items:center; gap:7px; font-size:13px; color:var(--text2); font-weight:500; }
+  .select-toolbar-count { font-size:12px; color:var(--text3); margin-right:auto; }
+  .select-check { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; padding:4px; border-radius:var(--radius-sm); cursor:pointer; }
+  .select-check:hover { background:var(--surface2); }
+  .select-check input { width:16px; height:16px; accent-color:var(--accent); cursor:pointer; }
+  .item-card-header.with-select { justify-content:flex-start; gap:8px; }
+  .item-card-header-main { display:flex; align-items:center; justify-content:space-between; gap:10px; flex:1; min-width:0; }
+  .item-card-header-main > div:first-child { min-width:0; }
+  .shelf-slot .select-check { float:right; margin:-4px -4px 2px 4px; }
   .sep { height: 0.5px; background: var(--border); margin: 10px 0; }
   .tag { display: inline-block; font-size: 11px; border-radius: 4px; padding: 2px 7px; font-weight: 500; background: var(--surface2); color: var(--text2); margin-right: 4px; }
   .exp-section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin: 10px 0 4px; }
@@ -122,8 +132,18 @@
   .exp-picker-group > summary::after { content: '›'; font-size: 18px; color: var(--text3); transform: rotate(0deg); transition: transform 0.15s; }
   .exp-picker-group[open] > summary::after { transform: rotate(90deg); }
   .exp-picker-category { border-top: 0.5px solid var(--border); }
-  .exp-picker-category > summary { cursor: pointer; list-style: none; padding: 7px 12px; font-size: 12px; font-weight: 600; color: var(--text2); display: flex; justify-content: space-between; }
+  .exp-picker-category > summary { cursor: pointer; list-style: none; padding: 7px 12px; font-size: 12px; font-weight: 600; color: var(--text2); display: flex; justify-content: space-between; gap: 10px; }
   .exp-picker-category > summary::-webkit-details-marker { display: none; }
+  .exp-picker-summary-main { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .exp-picker-summary-count { color: var(--text3); font-weight: 500; white-space: nowrap; }
+  .exp-picker-model > summary { padding-left: 12px; background: var(--surface); color: var(--text); }
+  .exp-picker-tissue > summary { padding-left: 26px; background: var(--surface2); color: var(--text2); }
+  .exp-picker-mouse-list { display:flex; flex-direction:column; gap:5px; padding:7px 8px 10px 38px; background:var(--surface2); }
+  .exp-picker-mouse-row { width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; text-align:left; background:var(--surface); color:var(--text); border:0.5px solid var(--border); border-radius:var(--radius-sm); padding:7px 9px; font-size:13px; cursor:pointer; }
+  .exp-picker-mouse-row:hover { border-color:var(--accent); }
+  .exp-picker-mouse-row:disabled { cursor:default; opacity:0.55; }
+  .exp-picker-mouse-name { font-weight:500; }
+  .exp-picker-mouse-meta { font-size:11px; color:var(--text3); white-space:nowrap; }
   .exp-picker-items { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px 9px; }
   .exp-picker-item { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; background: var(--surface); color: var(--text); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 7px 9px; font-size: 13px; cursor: pointer; }
   .exp-picker-item:hover { border-color: var(--accent); }
@@ -356,7 +376,7 @@
   </div>
 
   <!-- TO ORDER TAB -->
-  <div class="tab-content" id="tab-toorder" style="display:none">
+  <div class="tab-content" id="tab-toorder">
     <div class="section-header">
       <div class="section-title">To Order — Low &amp; Out of Stock</div>
     </div>
@@ -693,7 +713,7 @@
         <div id="exp-material-rows" style="display:flex;flex-direction:column;gap:6px"></div>
         <input type="search" id="exp-item-search" placeholder="Search materials, antibodies, tissues, cell lines, PDX tissues…" oninput="renderExpItemPicker(this.value)" style="margin-top:4px" />
         <div id="exp-item-picker" class="exp-item-browser"></div>
-        <div style="font-size:11px;color:var(--text3)">Open a section or category, then click an item to add it. Every selected item must have an amount greater than zero.</div>
+        <div style="font-size:11px;color:var(--text3)">Open a section or category, then click an item to add it. For PDX tissues, open model → tissue → mouse, then enter the amount to use above.</div>
       </div>
       <div class="field">
         <label>Protocol / method</label>
@@ -757,9 +777,10 @@
   <div class="modal" style="max-width:720px">
     <div class="modal-title" id="exp-review-title">Review before finalizing</div>
     <div id="exp-review-content" class="exp-review-summary"></div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="flex-wrap:wrap">
       <button type="button" class="btn-cancel" onclick="closeExperimentFinalizationReview()">Cancel</button>
-      <button type="button" class="btn-primary" id="exp-review-confirm-btn" style="flex:2" onclick="confirmExperimentFinalization()">Finalize experiment</button>
+      <button type="button" class="btn-sm primary" id="exp-review-print-btn" style="flex:1;min-width:150px;padding:10px 14px" onclick="printExperimentReview()">Print / Save PDF</button>
+      <button type="button" class="btn-primary" id="exp-review-confirm-btn" style="flex:2;min-width:180px" onclick="confirmExperimentFinalization()">Finalize experiment</button>
     </div>
   </div>
 </div>
@@ -944,6 +965,181 @@ let currentUser = '';
 let activeMaterialId = null;
 let _confirmCallback = null;
 const state = { materials: [], projects: [], tissues: [], celllines: [], experiments: [], pdxmodels: [], log: [] };
+
+
+// ── Select + export helpers ─────────────────────────────────────────────────
+const exportSelections = { projects:new Set(), materials:new Set(), tissues:new Set(), celllines:new Set(), experiments:new Set(), pdxmodels:new Set(), toorder:new Set() };
+const exportVisibleIds = {};
+
+function isExportSelected(collection, id) {
+  return Boolean(exportSelections[collection]?.has(String(id)));
+}
+
+function selectionCheckbox(collection, id) {
+  const safeCollection = escHtml(collection);
+  return `<label class="select-check" onclick="event.stopPropagation()" title="Select for export">
+    <input class="export-select export-select-${safeCollection}" type="checkbox" data-export-collection="${safeCollection}" data-export-id="${escHtml(id)}" ${isExportSelected(collection, id) ? 'checked' : ''} onchange="setExportSelection('${safeCollection}', this.dataset.exportId, this.checked)">
+  </label>`;
+}
+
+function renderSelectionToolbar(collection, visibleIds, label) {
+  const ids = (visibleIds || []).map(String);
+  exportVisibleIds[collection] = ids;
+  const selected = exportSelections[collection]?.size || 0;
+  const visibleSelected = ids.filter(id => isExportSelected(collection, id)).length;
+  const allVisibleSelected = ids.length > 0 && visibleSelected === ids.length;
+  return `<div class="select-toolbar" data-selection-toolbar="${escHtml(collection)}">
+    <label class="select-toolbar-label"><input type="checkbox" ${allVisibleSelected ? 'checked' : ''} ${ids.length ? '' : 'disabled'} onchange="toggleVisibleSelection('${escHtml(collection)}', this.checked)"> Select visible ${escHtml(label)}</label>
+    <span class="select-toolbar-count" data-selection-count="${escHtml(collection)}">${selected} selected</span>
+    <button type="button" class="btn-sm primary" data-export-button="${escHtml(collection)}" ${selected ? '' : 'disabled'} onclick="exportSelectedRecords('${escHtml(collection)}')">Export CSV</button>
+    <button type="button" class="btn-sm" ${selected ? '' : 'disabled'} data-clear-button="${escHtml(collection)}" onclick="clearExportSelection('${escHtml(collection)}')">Clear</button>
+  </div>`;
+}
+
+window.setExportSelection = function(collection, id, checked) {
+  const set = exportSelections[collection];
+  if (!set) return;
+  if (checked) set.add(String(id)); else set.delete(String(id));
+  document.querySelectorAll(`input[data-export-collection="${collection}"]`).forEach(cb => { if (cb.dataset.exportId === String(id)) cb.checked = checked; });
+  updateSelectionToolbar(collection);
+};
+
+window.toggleVisibleSelection = function(collection, checked) {
+  const set = exportSelections[collection];
+  if (!set) return;
+  const ids = exportVisibleIds[collection] || [];
+  ids.forEach(id => checked ? set.add(String(id)) : set.delete(String(id)));
+  document.querySelectorAll(`input[data-export-collection="${collection}"]`).forEach(cb => {
+    if (ids.includes(cb.dataset.exportId)) cb.checked = checked;
+  });
+  updateSelectionToolbar(collection);
+};
+
+window.clearExportSelection = function(collection) {
+  exportSelections[collection]?.clear();
+  document.querySelectorAll(`input[data-export-collection="${collection}"]`).forEach(cb => cb.checked = false);
+  updateSelectionToolbar(collection);
+};
+
+function updateSelectionToolbar(collection) {
+  const selected = exportSelections[collection]?.size || 0;
+  document.querySelectorAll(`[data-selection-count="${collection}"]`).forEach(el => { el.textContent = `${selected} selected`; });
+  document.querySelectorAll(`[data-export-button="${collection}"], [data-clear-button="${collection}"]`).forEach(btn => { btn.disabled = selected === 0; });
+  const ids = exportVisibleIds[collection] || [];
+  const visibleSelected = ids.filter(id => isExportSelected(collection, id)).length;
+  document.querySelectorAll(`[data-selection-toolbar="${collection}"] input[type="checkbox"]`).forEach(cb => {
+    cb.checked = ids.length > 0 && visibleSelected === ids.length;
+    cb.indeterminate = visibleSelected > 0 && visibleSelected < ids.length;
+  });
+}
+
+function htmlToText(html) {
+  const el = document.createElement('div');
+  el.innerHTML = html || '';
+  return el.textContent || el.innerText || '';
+}
+
+function attachmentNames(links) {
+  return (links || []).map(l => l?.name || String(l || '')).filter(Boolean).join('; ');
+}
+
+function materialDisplayName(id) {
+  const m = state.materials.find(x => x.id === id); return m ? m.name : id;
+}
+function tissueDisplayName(id) {
+  const t = state.tissues.find(x => x.id === id); return t ? t.name : id;
+}
+function celllineDisplayName(id) {
+  const c = state.celllines.find(x => x.id === id); return c ? c.name : id;
+}
+function pdxDisplayName(id) {
+  const p = state.pdxmodels.find(x => x.id === id); return p ? p.name : id;
+}
+
+function getExportSource(collection) {
+  if (collection === 'toorder') return state.materials.filter(m => Number(m.stock || 0) <= Number(m.lowAt || 0));
+  return state[collection] || [];
+}
+
+function selectedExportRecords(collection) {
+  const set = exportSelections[collection];
+  if (!set || !set.size) return [];
+  return getExportSource(collection).filter(item => set.has(String(item.id)));
+}
+
+function exportRowsFor(collection, records) {
+  if (collection === 'projects') return records.map(p => ({
+    'Project name': p.name || '', 'Description': p.desc || '', 'Created': p.created || '', 'Created by': p.createdBy || '',
+    'Materials': (p.materialIds || []).map(materialDisplayName).join('; '),
+    'PDX / mice': (p.pdxIds || []).map(pdxDisplayName).join('; '),
+    'Tissue samples': (p.tissueIds || []).map(tissueDisplayName).join('; '),
+    'Cell lines': (p.celllineIds || []).map(celllineDisplayName).join('; '),
+    'Attachments': attachmentNames(p.driveLinks)
+  }));
+  if (collection === 'materials' || collection === 'toorder') return records.map(m => ({
+    'Name': m.name || '', 'Category': m.category || '', 'Stock': m.stock ?? '', 'Unit': m.unit || '', 'Low-stock alert at': m.lowAt ?? '', 'Location': m.location || '',
+    'Company': m.company || '', 'Catalog number': m.catalog || '', 'Size': m.size || '', 'Delivery date': m.arrival || '', 'Date opened': m.opened || '', 'Expiration date': m.expiry || '',
+    'Hazards': Array.isArray(m.hazard) ? m.hazard.join('; ') : (m.hazard || ''), 'Notes': m.notes || '',
+    'Antibody purpose': m.abPurpose || '', 'Clone': m.abClone || '', 'Conjugate': m.abConjugate || '', 'Reactivity': m.abReactivity || '', 'Host': m.abHost || '', 'Clonality': m.abClonality || '', 'Dilution': m.abDilution || '', 'Retrieval': m.abRetrieval || '', 'Validation/status': m.abStatus || '', 'Source list/panel': m.abSource || '',
+    'Primer sequence': m.priSequence || '', 'Primer orientation': m.priOrientation || '', 'Primer application': m.priApplication || '', 'Stock conc. µM': m.priStockConc || '', 'Working conc. µM': m.priWorkConc || '', 'Tm °C': m.priTm || '',
+    'Plasmid ID': m.plaId || '', 'Backbone': m.plaBackbone || '', 'Vector type': m.plaVectype || '', 'Insert': m.plaInsert || '', 'Promoter': m.plaPromoter || '', 'Resistance': m.plaResistance || '', 'Selection marker': m.plaSelection || '', 'Concentration': m.plaConc || '', 'AddGene ID': m.plaAddgeneId || '', 'Received from': m.plaFrom || '',
+    'Attachments': attachmentNames(m.driveLinks)
+  }));
+  if (collection === 'tissues') return records.map(t => ({
+    'Sample name / ID': t.name || '', 'Type': t.type || '', 'Quantity / aliquots': t.qty ?? '', 'Freezer': t.freezer || '', 'Shelf / box position': t.shelf || '', 'Date frozen': t.date || '', 'Notes': t.notes || '', 'Attachments': attachmentNames(t.driveLinks)
+  }));
+  if (collection === 'celllines') return records.map(c => ({
+    'Cell line name': c.name || '', 'Passage': c.passage ?? '', 'Vials': c.vials ?? '', 'Date frozen': c.frozen || '', 'Location': c.location || '', 'Origin/source': c.origin || '', 'Notes': c.notes || '', 'Attachments': attachmentNames(c.driveLinks)
+  }));
+  if (collection === 'experiments') return records.map(e => ({
+    'Experiment title': e.title || '', 'Status': e.status || 'final', 'Date': e.date || '', 'Performed by': e.user || '', 'Project': e.projectName || '', 'Aim': e.aim || '',
+    'Items used': expItems(e).map(it => `${it.name || ''} (${it.amount || 0} ${it.unit || ''})`).join('; '),
+    'Protocol / method': htmlToText(e.protocol), 'Result': htmlToText(e.result), 'Next steps': htmlToText(e.next), 'Notes': e.notes || '', 'Attachments': attachmentNames(e.driveLinks)
+  }));
+  if (collection === 'pdxmodels') return records.map(p => ({
+    'Mouse ID': p.miceId || '', 'PDX model': p.model || p.origName || '', 'Display name': p.name || '', 'Year': p.year || '', 'Location': p.location || '',
+    'PT': p.tissues?.pt || 0, 'Lung': p.tissues?.lung || 0, 'Kidney': p.tissues?.kidney || 0, 'Ovary': p.tissues?.ovary || 0, 'PB': p.tissues?.pb || 0, 'BM': p.tissues?.bm || 0, 'Brain': p.tissues?.brain || 0, 'Liver': p.tissues?.liver || 0, 'FT': p.tissues?.ft || 0, 'AG': p.tissues?.ag || 0,
+    'Total tissues': Object.values(p.tissues || {}).reduce((sum, n) => sum + Number(n || 0), 0), 'Notes': p.notes || '', 'Attachments': attachmentNames(p.driveLinks)
+  }));
+  return records.map(r => ({ ...r }));
+}
+
+function exportFileStem(collection) {
+  const name = String(collection || 'export')
+    .replace(/[^a-z0-9_-]+/gi, '_')
+    .replace(/^_+|_+$/g, '') || 'export';
+  const today = new Date().toISOString().slice(0, 10);
+  return `lab_inventory_${name}_${today}`;
+}
+
+function csvEscape(value) {
+  const text = String(value ?? '').replace(/\r?\n|\r/g, ' ').trim();
+  if (/[",;\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+  return text;
+}
+
+window.exportSelectedRecords = function(collection) {
+  const records = selectedExportRecords(collection);
+  if (!records.length) { showToast('Select at least one record first.'); return; }
+  const rows = exportRowsFor(collection, records);
+  const columns = [...new Set(rows.flatMap(row => Object.keys(row)))];
+  if (!columns.length) { showToast('No exportable columns found.'); return; }
+  const csvLines = [
+    columns.map(csvEscape).join(','),
+    ...rows.map(row => columns.map(col => csvEscape(row[col])).join(','))
+  ];
+  const csv = '\ufeff' + csvLines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${exportFileStem(collection)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${records.length} record(s) as CSV.`);
+};
 
 // ── Firestore helpers ────────────────────────────────────────────────────────
 async function saveDoc(col, id, data) { await setDoc(doc(db, col, id), data); }
@@ -1240,7 +1436,7 @@ window.renderProjects = function() {
     sort === 'date-asc'  ? (a.id||'').localeCompare(b.id||'') :
                            (a.name||'').localeCompare(b.name||''));
   if (projs.length === 0) { el.innerHTML = '<div class="empty">No projects found.</div>'; return; }
-  el.innerHTML = projs.map(p => {
+  el.innerHTML = renderSelectionToolbar('projects', projs.map(p => p.id), 'projects') + projs.map(p => {
     const mats = state.materials.filter(m => p.materialIds && p.materialIds.includes(m.id));
     const rows = mats.length === 0
       ? '<div style="font-size:13px;color:var(--text3)">No materials assigned.</div>'
@@ -1250,9 +1446,12 @@ window.renderProjects = function() {
           <button class="btn-sm primary" style="font-size:12px;padding:5px 10px" onclick="openUseMaterial('${m.id}')">Use</button>
         </div>`).join('');
     return `<div class="item-card">
-      <div class="item-card-header" onclick="toggleCard('proj-${p.id}')">
-        <div><div class="item-card-title">${p.name}</div><div class="item-card-meta">By ${p.createdBy||'?'} · ${p.created} · ${mats.length} material(s)</div></div>
-        <span class="chevron" id="chev-proj-${p.id}">⌄</span>
+      <div class="item-card-header with-select" onclick="toggleCard('proj-${p.id}')">
+        ${selectionCheckbox('projects', p.id)}
+        <div class="item-card-header-main">
+          <div><div class="item-card-title">${p.name}</div><div class="item-card-meta">By ${p.createdBy||'?'} · ${p.created} · ${mats.length} material(s)</div></div>
+          <span class="chevron" id="chev-proj-${p.id}">⌄</span>
+        </div>
       </div>
       <div class="item-card-body" id="proj-${p.id}">
         ${p.desc ? `<div style="font-size:13px;color:var(--text2);margin-bottom:12px">${p.desc}</div>` : ''}
@@ -1424,12 +1623,14 @@ window.renderToOrder = function() {
   const rows = items.map(m => {
     const out = (m.stock ?? 0) <= 0;
     const badge = out ? '<span class="badge badge-out">Out of stock</span>' : '<span class="badge badge-low">Low stock</span>';
-    return `<div class="item-card"><div class="item-card-header"><div>
-      <div class="item-card-title">${m.name} ${badge}</div>
-      <div class="item-card-meta">${m.category || '—'}${m.company ? ' · ' + m.company : ''}${m.catalog ? ' · Cat# ' + m.catalog : ''} · have ${m.stock ?? 0} / reorder at ${m.lowAt ?? 0} ${m.unit || ''}</div>
-    </div><button class="btn-sm" onclick="editMaterial('${m.id}')">Update stock</button></div></div>`;
+    return `<div class="item-card"><div class="item-card-header with-select">
+      ${selectionCheckbox('toorder', m.id)}
+      <div class="item-card-header-main"><div>
+        <div class="item-card-title">${m.name} ${badge}</div>
+        <div class="item-card-meta">${m.category || '—'}${m.company ? ' · ' + m.company : ''}${m.catalog ? ' · Cat# ' + m.catalog : ''} · have ${m.stock ?? 0} / reorder at ${m.lowAt ?? 0} ${m.unit || ''}</div>
+      </div><button class="btn-sm" onclick="event.stopPropagation(); editMaterial('${m.id}')">Update stock</button></div></div></div>`;
   }).join('');
-  el.innerHTML = `<div class="filter-bar"><div class="sub" style="margin:0">${items.length} item(s) at or below reorder threshold</div><button class="btn-sm" onclick="copyOrderList()" style="margin-left:auto">Copy list</button></div>${rows}`;
+  el.innerHTML = renderSelectionToolbar('toorder', items.map(m => m.id), 'order items') + `<div class="filter-bar"><div class="sub" style="margin:0">${items.length} item(s) at or below reorder threshold</div><button class="btn-sm" onclick="copyOrderList()" style="margin-left:auto">Copy list</button></div>${rows}`;
   window._orderList = items.map(m => `${m.name}${m.company ? ' (' + m.company + ')' : ''}${m.catalog ? ' [' + m.catalog + ']' : ''} — have ${m.stock ?? 0} ${m.unit || ''}, reorder at ${m.lowAt ?? 0}`).join('\n');
 };
 window.copyOrderList = function() { navigator.clipboard?.writeText(window._orderList || '').then(() => showToast('Order list copied to clipboard')); };
@@ -1494,23 +1695,26 @@ window.renderMaterials = function() {
     mats = [...mats].sort((a,b) => (order[a.abPurpose||'']??9) - (order[b.abPurpose||'']??9) || (a.name||'').localeCompare(b.name||''));
   }
   if (mats.length === 0) { el.innerHTML = '<div class="empty">No materials found.</div>'; return; }
-  el.innerHTML = mats.map(m => {
+  el.innerHTML = renderSelectionToolbar('materials', mats.map(m => m.id), 'materials') + mats.map(m => {
     const logs = (m.log || []).slice(0,3).map(l =>
       `<div class="log-entry"><span class="log-desc">${l.action==='consume'?'↓ Reserved/used':l.action==='restore'?'↑ Restored':l.action==='add'?'↑ Added':'→ Moved'} ${l.action!=='relocate'?l.amount+' '+m.unit:l.note}${l.note&&l.action!=='relocate'?' — '+l.note:''}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`
     ).join('');
     const expBadge = expiryBadge(m.expiry);
     return `<div class="item-card">
-      <div class="item-card-header" onclick="toggleCard('mat-${m.id}')">
-        <div>
-          <div class="item-card-title">${m.name} ${expBadge}</div>
-          <div class="item-card-meta">${m.category}${m.category==='Antibody'&&m.abPurpose?' · '+m.abPurpose:''} · ${m.location||'No location'}${m.expiry?' · Exp: '+m.expiry:''}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="text-align:right">
-            <div style="font-size:15px;font-weight:500">${m.stock} <span style="font-size:12px;color:var(--text3)">${m.unit}</span></div>
-            ${stockBadge(m)}
+      <div class="item-card-header with-select" onclick="toggleCard('mat-${m.id}')">
+        ${selectionCheckbox('materials', m.id)}
+        <div class="item-card-header-main">
+          <div>
+            <div class="item-card-title">${m.name} ${expBadge}</div>
+            <div class="item-card-meta">${m.category}${m.category==='Antibody'&&m.abPurpose?' · '+m.abPurpose:''} · ${m.location||'No location'}${m.expiry?' · Exp: '+m.expiry:''}</div>
           </div>
-          <span class="chevron" id="chev-mat-${m.id}">⌄</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="text-align:right">
+              <div style="font-size:15px;font-weight:500">${m.stock} <span style="font-size:12px;color:var(--text3)">${m.unit}</span></div>
+              ${stockBadge(m)}
+            </div>
+            <span class="chevron" id="chev-mat-${m.id}">⌄</span>
+          </div>
         </div>
       </div>
       <div class="item-card-body" id="mat-${m.id}">
@@ -1628,17 +1832,21 @@ function renderTissues() {
     <div class="freezer-section"><div class="freezer-label">🧊 ${freezer}</div>
     <div class="shelf-grid">${samples.map(s => `
       <div class="shelf-slot occupied" onclick="toggleCard('tis-${s.id}')">
+        ${selectionCheckbox('tissues', s.id)}
         <div class="shelf-slot-label">${s.shelf||'TBD'}</div>
         <div class="shelf-slot-content">${s.name}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:3px">${s.qty} · ${s.type}</div>
       </div>`).join('')}</div></div>`).join('');
-  el.innerHTML = tlist.map(s => `
+  el.innerHTML = renderSelectionToolbar('tissues', tlist.map(s => s.id), 'tissues') + tlist.map(s => `
     <div class="item-card">
-      <div class="item-card-header" onclick="toggleCard('tis-${s.id}')">
-        <div><div class="item-card-title">${s.name}</div><div class="item-card-meta">${s.type} · ${s.freezer} · ${s.shelf||'TBD'}</div></div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="font-size:15px;font-weight:500">${s.qty} <span style="font-size:12px;color:var(--text3)">aliquot(s)</span></div>
-          <span class="chevron" id="chev-tis-${s.id}">⌄</span>
+      <div class="item-card-header with-select" onclick="toggleCard('tis-${s.id}')">
+        ${selectionCheckbox('tissues', s.id)}
+        <div class="item-card-header-main">
+          <div><div class="item-card-title">${s.name}</div><div class="item-card-meta">${s.type} · ${s.freezer} · ${s.shelf||'TBD'}</div></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:15px;font-weight:500">${s.qty} <span style="font-size:12px;color:var(--text3)">aliquot(s)</span></div>
+            <span class="chevron" id="chev-tis-${s.id}">⌄</span>
+          </div>
         </div>
       </div>
       <div class="item-card-body" id="tis-${s.id}">
@@ -1739,16 +1947,19 @@ function renderCellLines() {
     sort === 'vials-asc'  ? (a.vials||0) - (b.vials||0) :
                             (a.name||'').localeCompare(b.name||''));
   if (cls.length === 0) { el.innerHTML = '<div class="empty">No cell lines found.</div>'; return; }
-  el.innerHTML = cls.map(cl => `
+  el.innerHTML = renderSelectionToolbar('celllines', cls.map(cl => cl.id), 'cell lines') + cls.map(cl => `
     <div class="item-card">
-      <div class="item-card-header" onclick="toggleCard('cl-${cl.id}')">
-        <div>
-          <div class="item-card-title">${cl.name}</div>
-          <div class="item-card-meta">P${cl.passage} · ${cl.vials} vial(s) · ${cl.location||'No location'}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="badge" style="background:var(--purple-light);color:var(--purple)">P${cl.passage}</span>
-          <span class="chevron" id="chev-cl-${cl.id}">⌄</span>
+      <div class="item-card-header with-select" onclick="toggleCard('cl-${cl.id}')">
+        ${selectionCheckbox('celllines', cl.id)}
+        <div class="item-card-header-main">
+          <div>
+            <div class="item-card-title">${cl.name}</div>
+            <div class="item-card-meta">P${cl.passage} · ${cl.vials} vial(s) · ${cl.location||'No location'}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="badge" style="background:var(--purple-light);color:var(--purple)">P${cl.passage}</span>
+            <span class="chevron" id="chev-cl-${cl.id}">⌄</span>
+          </div>
         </div>
       </div>
       <div class="item-card-body" id="cl-${cl.id}">
@@ -1968,13 +2179,25 @@ function escHtml(value) {
 function expItemKey(item) { return `${item.type}:${item.id}${item.type === 'pdxtissue' ? ':' + item.sub : ''}`; }
 function expItemValue(item) { return expItemKey(item); }
 
+function pdxModelLabel(p) {
+  if (!p) return 'Unknown model';
+  const paren = String(p.name || '').match(/\(([^)]+)\)/);
+  return p.model || p.origName || (paren ? paren[1] : '') || p.name || 'Unknown model';
+}
+function pdxMouseLabel(p) {
+  if (!p) return '?';
+  const baseName = String(p.name || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+  return p.miceId || baseName || p.miceIds || p.id || '?';
+}
+
 function expItemFromValue(value) {
   const parts = String(value || '').split(':');
   const type = parts[0];
   if (type === 'pdxtissue') {
     const p = state.pdxmodels.find(x => x.id === parts[1]);
     if (!p || !parts[2]) return null;
-    return { type, id: parts[1], sub: parts[2], name: `${p.name} — ${PDX_TIS_LABELS[parts[2]] || parts[2]}`, unit: 'pcs', amount: 0 };
+    const tissueLabel = PDX_TIS_LABELS[parts[2]] || parts[2];
+    return { type, id: parts[1], sub: parts[2], name: `${pdxModelLabel(p)} — ${tissueLabel} — Mouse ${pdxMouseLabel(p)}`, unit: 'pcs', amount: 1 };
   }
   const id = parts.slice(1).join(':');
   if (type === 'material') {
@@ -2070,6 +2293,16 @@ function pickerItemButton(item, extraMeta = '') {
   return `<button type="button" class="exp-picker-item" ${(selected || unavailable) ? 'disabled' : ''} onclick="addExpItemByValue('${escHtml(key)}')"><span>${escHtml(item.name)}</span><span style="font-size:11px;color:var(--text3);white-space:nowrap">${selected ? 'Added' : unavailable ? 'Out of stock' : `${available} ${escHtml(item.unit || '')}${extraMeta ? ' · ' + escHtml(extraMeta) : ''}`}</span></button>`;
 }
 
+function pdxMouseSelectionButton(item, mouse, qty) {
+  const key = expItemKey(item);
+  const selected = [...document.querySelectorAll('#exp-material-rows .exp-selected-row')].some(r => r.dataset.itemValue === key);
+  const available = availableIncludingCurrentReservation(item);
+  const unavailable = available <= 0;
+  const mouseLabel = pdxMouseLabel(mouse);
+  const right = selected ? 'Added' : unavailable ? 'Out of stock' : `${available} pcs available · Select`;
+  return `<button type="button" class="exp-picker-mouse-row" ${(selected || unavailable) ? 'disabled' : ''} onclick="addExpItemByValue('${escHtml(key)}')"><span><span class="exp-picker-mouse-name">Mouse ${escHtml(mouseLabel)}</span>${mouse.location ? `<span style="font-size:11px;color:var(--text3);margin-left:6px">${escHtml(mouse.location)}</span>` : ''}</span><span class="exp-picker-mouse-meta">${escHtml(right)}</span></button>`;
+}
+
 window.renderExpItemPicker = function(searchTerm) {
   const wrap = document.getElementById('exp-item-picker');
   if (!wrap) return;
@@ -2116,12 +2349,38 @@ window.renderExpItemPicker = function(searchTerm) {
     const c = state.celllines.find(x => x.id === i.id);
     return matches(i, [c?.origin, c?.location].filter(Boolean).join(' '));
   });
-  const pdxTissues = [];
+  const pdxModelGroups = new Map();
   state.pdxmodels.forEach(p => Object.entries(p.tissues || {}).forEach(([sub, qty]) => {
-    if (Number(qty) <= 0) return;
+    const n = Number(qty || 0);
+    if (n <= 0) return;
     const item = expItemFromValue(`pdxtissue:${p.id}:${sub}`);
-    if (item && matches(item, `${p.origName || ''} ${PDX_TIS_LABELS[sub] || sub}`)) pdxTissues.push(item);
+    const modelName = pdxModelLabel(p);
+    const tissueLabel = PDX_TIS_LABELS[sub] || sub;
+    const mouseName = pdxMouseLabel(p);
+    if (!item || !matches(item, `${modelName} ${mouseName} ${p.origName || ''} ${tissueLabel}`)) return;
+    const group = pdxModelGroups.get(modelName) || { modelName, total:0, tissues:new Map() };
+    const tissueGroup = group.tissues.get(sub) || { sub, label:tissueLabel, total:0, rows:[] };
+    tissueGroup.total += n;
+    tissueGroup.rows.push({ item, mouse:p, qty:n });
+    group.tissues.set(sub, tissueGroup);
+    group.total += n;
+    pdxModelGroups.set(modelName, group);
   }));
+  const tissueOrder = Object.keys(PDX_TIS_LABELS);
+  const pdxModelSections = [...pdxModelGroups.values()].sort((a,b) => a.modelName.localeCompare(b.modelName, undefined, { numeric:true, sensitivity:'base' })).map(group => {
+    const tissueGroups = [...group.tissues.values()].sort((a,b) => {
+      const ai = tissueOrder.indexOf(a.sub), bi = tissueOrder.indexOf(b.sub);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.label.localeCompare(b.label);
+    });
+    const tissueHtml = tissueGroups.map(t => {
+      const mouseRows = t.rows
+        .sort((a,b)=>pdxMouseLabel(a.mouse).localeCompare(pdxMouseLabel(b.mouse), undefined, { numeric:true, sensitivity:'base' }))
+        .map(({item, mouse, qty}) => pdxMouseSelectionButton(item, mouse, qty))
+        .join('');
+      return `<details class="exp-picker-category exp-picker-tissue" ${term ? 'open' : ''}><summary><span class="exp-picker-summary-main">${escHtml(t.label)}</span><span class="exp-picker-summary-count">Total ${t.total} pcs</span></summary><div class="exp-picker-mouse-list">${mouseRows}</div></details>`;
+    }).join('');
+    return `<details class="exp-picker-category exp-picker-model" ${term ? 'open' : ''}><summary><span class="exp-picker-summary-main">${escHtml(group.modelName)}</span><span class="exp-picker-summary-count">${group.total} total tissues</span></summary>${tissueHtml}</details>`;
+  }).join('');
 
   const sections = [];
   if (term && !hasNameMatch) {
@@ -2130,10 +2389,10 @@ window.renderExpItemPicker = function(searchTerm) {
   if (materialCategories) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>Materials</span><span>${Object.values(byCategory).reduce((n,a)=>n+a.length,0)}</span></summary>${materialCategories}</details>`);
   if (tissues.length) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>Tissues & samples</span><span>${tissues.length}</span></summary><div class="exp-picker-items">${tissues.sort((a,b)=>a.name.localeCompare(b.name)).map(i=>pickerItemButton(i)).join('')}</div></details>`);
   if (celllines.length) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>Cell lines</span><span>${celllines.length}</span></summary><div class="exp-picker-items">${celllines.sort((a,b)=>a.name.localeCompare(b.name)).map(i=>pickerItemButton(i)).join('')}</div></details>`);
-  if (pdxTissues.length) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>PDX tissues</span><span>${pdxTissues.length}</span></summary><div class="exp-picker-items">${pdxTissues.sort((a,b)=>a.name.localeCompare(b.name)).map(i=>pickerItemButton(i)).join('')}</div></details>`);
+  if (pdxModelSections) sections.push(`<details class="exp-picker-group" ${term ? 'open' : ''}><summary><span>PDX tissues by model</span><span>${pdxModelGroups.size} model(s)</span></summary>${pdxModelSections}</details>`);
 
   const resultSections = sections.filter(Boolean);
-  const hasResults = materialCategories || tissues.length || celllines.length || pdxTissues.length;
+  const hasResults = materialCategories || tissues.length || celllines.length || pdxModelGroups.size;
   wrap.innerHTML = hasResults ? resultSections.join('') : `<div style="padding:14px;font-size:13px;color:var(--text3)">${term ? 'No inventory items match this search.' : 'No inventory items are available yet.'}</div>`;
 };
 
@@ -2253,6 +2512,230 @@ function renderExperimentFinalizationReview(exp) {
 window.closeExperimentFinalizationReview = function() {
   document.getElementById('modal-experiment-review').style.display = 'none';
   pendingExperimentFinalization = null;
+};
+
+function plainTextFromRichHtml(html) {
+  const host = document.createElement('div');
+  host.innerHTML = cleanReviewRichHtml(html || '');
+  return host.textContent.trim();
+}
+
+function printableFileRows(files) {
+  if (!files || !files.length) return '<div class="empty-print">No attachments.</div>';
+  return `<ul>${files.map(file => {
+    const name = escHtml(file?.name || String(file));
+    const url = file?.url ? `<div class="small-print">${escHtml(file.url)}</div>` : '';
+    return `<li>${name}${url}</li>`;
+  }).join('')}</ul>`;
+}
+
+function printableItemDetails(item) {
+  const details = [];
+  if (item.type === 'material') {
+    const m = state.materials.find(x => x.id === item.id);
+    if (m) {
+      details.push(['Category', m.category]);
+      details.push(['Company', m.company || m.abCompany]);
+      details.push(['Catalog / ordering #', m.catalog || m.abCatalog]);
+      details.push(['Lot', m.abLot]);
+      details.push(['Location', m.location]);
+      details.push(['Purpose / usage', m.abPurpose || m.purpose]);
+      details.push(['Clone', m.abClone]);
+      details.push(['Conjugate', m.abConjugate]);
+      details.push(['Reactivity', m.abReactivity]);
+      details.push(['Host / clonality', [m.abHost, m.abClonality].filter(Boolean).join(' / ')]);
+      details.push(['Primer sequence', m.priSequence]);
+      details.push(['Plasmid ID', m.plaId]);
+      details.push(['Backbone / insert', [m.plaBackbone, m.plaInsert].filter(Boolean).join(' / ')]);
+    }
+  } else if (item.type === 'tissue') {
+    const t = state.tissues.find(x => x.id === item.id);
+    if (t) {
+      details.push(['Sample type', t.type]);
+      details.push(['Freezer', t.freezer]);
+      details.push(['Shelf / box', t.shelf]);
+      details.push(['Date frozen', t.date]);
+      details.push(['Notes', t.notes]);
+    }
+  } else if (item.type === 'cellline') {
+    const c = state.celllines.find(x => x.id === item.id);
+    if (c) {
+      details.push(['Passage', c.passage]);
+      details.push(['Storage vials', c.vials]);
+      details.push(['Location', c.location]);
+      details.push(['Date frozen', c.frozen]);
+      details.push(['Origin / source', c.origin]);
+      details.push(['Notes', c.notes]);
+    }
+  } else if (item.type === 'pdxtissue') {
+    const p = state.pdxmodels.find(x => x.id === item.id);
+    if (p) {
+      details.push(['PDX model', pdxModelLabel(p)]);
+      details.push(['Mouse ID', pdxMouseLabel(p)]);
+      details.push(['Tissue type', PDX_TIS_LABELS[item.sub] || item.sub]);
+      details.push(['Mouse location', p.location]);
+      details.push(['Year', p.year]);
+      details.push(['Passage', p.passage]);
+      details.push(['Gender', p.gender]);
+      details.push(['Notes', p.notes]);
+    }
+  }
+  return details
+    .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '')
+    .map(([label, value]) => `<div><b>${escHtml(label)}:</b> ${escHtml(value)}</div>`)
+    .join('');
+}
+
+function printableItemsTable(items) {
+  if (!items || !items.length) return '<div class="empty-print">No inventory items selected.</div>';
+  return `<table>
+    <thead><tr><th>Item</th><th>Type / source</th><th>Amount</th><th>Details</th></tr></thead>
+    <tbody>${items.map(item => `
+      <tr>
+        <td>${escHtml(item.name)}</td>
+        <td>${escHtml(experimentItemTypeLabel(item))}</td>
+        <td>${escHtml(item.amount)} ${escHtml(item.unit || '')}</td>
+        <td>${printableItemDetails(item) || '<span class="empty-print">No extra inventory details.</span>'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function buildExperimentPrintHtml(exp) {
+  const items = normalizeExpItems(exp.items);
+  const printedAt = new Date().toLocaleString();
+  const protocolHtml = reviewHtmlHasContent(exp.protocol) ? cleanReviewRichHtml(exp.protocol) : '<span class="empty-print">Not provided.</span>';
+  const resultHtml = reviewHtmlHasContent(exp.result) ? cleanReviewRichHtml(exp.result) : '<span class="empty-print">Not provided.</span>';
+  const nextHtml = reviewHtmlHasContent(exp.next) ? cleanReviewRichHtml(exp.next) : '<span class="empty-print">Not provided.</span>';
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${escHtml(exp.title || 'Experiment record')}</title>
+<style>
+  @page { size: A4 portrait; margin: 6mm; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:#fff; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#111; line-height:1.18; font-size:9px; }
+  .print-page { width:198mm; margin:0 auto; padding:0; background:#fff; }
+  h1 { font-size:16px; margin:0 0 2px; line-height:1.1; }
+  h2 { font-size:9.5px; margin:5px 0 3px; padding-bottom:1px; border-bottom:0.5px solid #333; text-transform:uppercase; letter-spacing:.03em; }
+  .meta { display:grid; grid-template-columns: repeat(3, 1fr); gap:3px 5px; margin:5px 0 4px; }
+  .meta div { border:0.5px solid #bbb; padding:3px 4px; min-height:17px; overflow-wrap:anywhere; }
+  .label { display:block; font-size:6.8px; text-transform:uppercase; letter-spacing:.05em; color:#555; margin-bottom:1px; }
+  table { width:100%; border-collapse:collapse; margin-top:2px; font-size:7.7px; line-height:1.12; }
+  th, td { border:0.5px solid #bbb; padding:2px 3px; vertical-align:top; text-align:left; overflow-wrap:anywhere; }
+  th { background:#f3f3f3; font-size:6.9px; text-transform:uppercase; letter-spacing:.03em; }
+  th:nth-child(1), td:nth-child(1) { width:24%; }
+  th:nth-child(2), td:nth-child(2) { width:19%; }
+  th:nth-child(3), td:nth-child(3) { width:10%; white-space:nowrap; }
+  th:nth-child(4), td:nth-child(4) { width:47%; font-size:7.2px; }
+  td div { margin:0 0 1px; }
+  ul, ol { margin:2px 0 0; padding-left:12px; }
+  li { margin:0; }
+  .section { margin:0; }
+  .rich { border:0.5px solid #bbb; padding:3px 4px; min-height:14px; overflow-wrap:anywhere; }
+  .rich p { margin:0 0 2px; }
+  .rich p:last-child { margin-bottom:0; }
+  .empty-print { color:#777; font-style:italic; }
+  .small-print { color:#555; font-size:7px; overflow-wrap:anywhere; }
+  .signature { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:8px; font-size:8px; }
+  .sig-line { border-top:0.5px solid #222; padding-top:3px; color:#444; }
+  @media print {
+    html, body { width:auto; height:auto; overflow:hidden; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    button { display:none; }
+    .print-page { page-break-after:avoid; break-after:avoid; }
+  }
+</style>
+<script>
+  window.fitReviewToOnePage = function() {
+    var page = document.querySelector('.print-page');
+    if (!page) return;
+    page.style.zoom = '1';
+    var probe = document.createElement('div');
+    probe.style.position = 'absolute';
+    probe.style.visibility = 'hidden';
+    probe.style.height = '285mm';
+    probe.style.width = '1px';
+    document.body.appendChild(probe);
+    var availableHeight = probe.getBoundingClientRect().height;
+    probe.remove();
+    var contentHeight = page.scrollHeight;
+    var scale = Math.min(1, availableHeight / Math.max(contentHeight + 8, 1));
+    page.style.zoom = String(Math.max(0.42, scale));
+    document.body.style.overflow = 'hidden';
+  };
+  window.addEventListener('load', function() { setTimeout(window.fitReviewToOnePage, 50); });
+<\/script>
+</head>
+<body>
+  <div class="print-page">
+    <h1>${escHtml(exp.title || 'Experiment record')}</h1>
+    <div class="small-print">Generated from Lab Inventory review · ${escHtml(printedAt)}</div>
+
+    <div class="meta">
+      <div><span class="label">Date</span>${escHtml(formatReviewDate(exp.date))}</div>
+      <div><span class="label">Performed by</span>${escHtml(exp.user || 'Not provided')}</div>
+      <div><span class="label">Project</span>${escHtml(exp.projectName || 'No project assigned')}</div>
+      <div><span class="label">Status at export</span>${escHtml(exp.status === 'final' ? 'Final' : 'Draft / review before finalizing')}</div>
+      <div><span class="label">Inventory reservation</span>${exp.stockReserved ? 'Reserved when draft was saved' : 'Not reserved / older draft'}</div>
+      <div><span class="label">Items selected</span>${escHtml(String(items.length))}</div>
+    </div>
+
+    <div class="section"><h2>Aim of the experiment</h2><div class="rich">${exp.aim ? escHtml(exp.aim).replace(/\n/g, '<br>') : '<span class="empty-print">Not provided.</span>'}</div></div>
+    <div class="section"><h2>Items used</h2>${printableItemsTable(items)}</div>
+    <div class="section"><h2>Protocol / method</h2><div class="rich">${protocolHtml}</div></div>
+    <div class="section"><h2>Result</h2><div class="rich">${resultHtml}</div></div>
+    <div class="section"><h2>Next steps</h2><div class="rich">${nextHtml}</div></div>
+    <div class="section"><h2>Notes</h2><div class="rich">${exp.notes ? escHtml(exp.notes).replace(/\n/g, '<br>') : '<span class="empty-print">Not provided.</span>'}</div></div>
+    <div class="section"><h2>Attachments</h2>${printableFileRows(exp.driveLinks || [])}</div>
+
+    <div class="signature">
+      <div class="sig-line">Signature / initials</div>
+      <div class="sig-line">Date</div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+function openExperimentPrintWindow(exp) {
+  if (!exp) { alert('No experiment record found.'); return; }
+  const html = buildExperimentPrintHtml(exp);
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeTitle = String(exp.title || 'experiment_record').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '') || 'experiment_record';
+    a.href = url;
+    a.download = `${safeTitle}_lab_book_print.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('Print page downloaded. Open it and choose Print / Save as PDF.');
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
+  setTimeout(() => {
+    if (typeof printWindow.fitReviewToOnePage === 'function') printWindow.fitReviewToOnePage();
+    printWindow.focus();
+    printWindow.print();
+  }, 400);
+}
+
+window.printExperimentReview = function() {
+  openExperimentPrintWindow(pendingExperimentFinalization);
+};
+
+window.printExperimentRecord = function(id) {
+  const exp = state.experiments.find(x => x.id === id);
+  if (!exp) { alert('Experiment not found.'); return; }
+  openExperimentPrintWindow(exp);
 };
 
 window.confirmExperimentFinalization = async function() {
@@ -2503,7 +2986,7 @@ window.renderExperiments = function() {
     projSel.innerHTML = '<option value="">All projects</option>' + state.projects.map(p => `<option value="${escHtml(p.id)}"${p.id===cur?' selected':''}>${escHtml(p.name)}</option>`).join('');
   }
   if (!exps.length) { el.innerHTML = '<div class="empty">No experiments found.</div>'; return; }
-  el.innerHTML = exps.map(e => {
+  el.innerHTML = renderSelectionToolbar('experiments', exps.map(e => e.id), 'experiments') + exps.map(e => {
     const status = e.status || 'final';
     const items = expItems(e);
     const reserved = reservedItemsForExperiment(e);
@@ -2511,9 +2994,12 @@ window.renderExperiments = function() {
     const itemList = items.map(it => `<span class="tag">${escHtml(it.name)} · ${Number(it.amount)||0} ${escHtml(it.unit||'')}</span>`).join('');
     const statusBadge = status === 'final' ? '<span class="badge badge-ok">Final</span>' : '<span class="badge badge-low">Draft</span>';
     return `<div class="item-card">
-      <div class="item-card-header" onclick="toggleCard('exp-${escHtml(e.id)}')">
-        <div><div class="item-card-title">${escHtml(e.title)} ${statusBadge}</div><div class="item-card-meta">${escHtml(e.date||'No date')} · ${escHtml(e.user||'?')}${e.projectName?' · '+escHtml(e.projectName):''}</div></div>
-        <span class="chevron" id="chev-exp-${escHtml(e.id)}">⌄</span>
+      <div class="item-card-header with-select" onclick="toggleCard('exp-${escHtml(e.id)}')">
+        ${selectionCheckbox('experiments', e.id)}
+        <div class="item-card-header-main">
+          <div><div class="item-card-title">${escHtml(e.title)} ${statusBadge}</div><div class="item-card-meta">${escHtml(e.date||'No date')} · ${escHtml(e.user||'?')}${e.projectName?' · '+escHtml(e.projectName):''}</div></div>
+          <span class="chevron" id="chev-exp-${escHtml(e.id)}">⌄</span>
+        </div>
       </div>
       <div class="item-card-body" id="exp-${escHtml(e.id)}">
         ${legacyUnreserved?'<div style="background:var(--warn-light);color:var(--warn);padding:8px 10px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:10px">Older draft: its stock has not been reserved yet. Edit and save it once to reserve the listed items.</div>':''}
@@ -2526,6 +3012,7 @@ window.renderExperiments = function() {
         ${renderDriveLinks(e.driveLinks, {collection:'experiments', docId:e.id})}
         <div class="action-row">
           ${status !== 'final' ? `<button class="btn-sm" style="background:var(--accent);color:#fff" onclick="finalizeExperiment('${escHtml(e.id)}')">Finalize</button>` : ''}
+          <button class="btn-sm primary" onclick="printExperimentRecord('${escHtml(e.id)}')">Print / Save PDF</button>
           <button class="btn-sm" onclick="editExperiment('${escHtml(e.id)}')">Edit</button>
           <button class="btn-sm danger" onclick="deleteExperiment('${escHtml(e.id)}')">Delete</button>
         </div>
@@ -2695,7 +3182,7 @@ window.renderPDXModels = function() {
     sort === 'location' ? ((a.location||'').localeCompare(b.location||'', undefined, coll) || animalKey(a).localeCompare(animalKey(b), undefined, coll)) :
                           animalKey(a).localeCompare(animalKey(b), undefined, coll));
   if (models.length === 0) { el.innerHTML = '<div class="empty">No mice found.</div>'; return; }
-  el.innerHTML = models.map(p => {
+  el.innerHTML = renderSelectionToolbar('pdxmodels', models.map(p => p.id), 'mice') + models.map(p => {
     const tisRows = PDX_TISSUES.filter(t => p.tissues&&p.tissues[t]>0).map(t => `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border)">
         <span style="font-size:13px;font-weight:500">${PDX_TISSUE_LABELS[t]}</span>
@@ -2707,12 +3194,15 @@ window.renderPDXModels = function() {
       </div>`).join('');
     const allTisZero = !PDX_TISSUES.some(t => p.tissues&&p.tissues[t]>0);
     return `<div class="item-card">
-      <div class="item-card-header" onclick="toggleCard('pdx-${p.id}')">
-        <div>
-          <div class="item-card-title">${p.name}${p.origName?` <span style="font-size:12px;color:var(--text3);font-weight:400">(${p.origName})</span>`:''}</div>
-          <div class="item-card-meta">${[p.year,p.location,p.miceCount?p.miceCount+' mice':(p.miceIds?'Mice: '+p.miceIds:'')].filter(Boolean).join(' · ')}</div>
+      <div class="item-card-header with-select" onclick="toggleCard('pdx-${p.id}')">
+        ${selectionCheckbox('pdxmodels', p.id)}
+        <div class="item-card-header-main">
+          <div>
+            <div class="item-card-title">${p.name}${p.origName?` <span style="font-size:12px;color:var(--text3);font-weight:400">(${p.origName})</span>`:''}</div>
+            <div class="item-card-meta">${[p.year,p.location,p.miceCount?p.miceCount+' mice':(p.miceIds?'Mice: '+p.miceIds:'')].filter(Boolean).join(' · ')}</div>
+          </div>
+          <span class="chevron" id="chev-pdx-${p.id}">⌄</span>
         </div>
-        <span class="chevron" id="chev-pdx-${p.id}">⌄</span>
       </div>
       <div class="item-card-body" id="pdx-${p.id}">
         ${allTisZero ? '<div style="font-size:13px;color:var(--text3);margin-bottom:10px">No tissue samples recorded.</div>' : `<div style="margin-bottom:10px"><div class="exp-section-label">Tissue samples</div>${tisRows}</div>`}
