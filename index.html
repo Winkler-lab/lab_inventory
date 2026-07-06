@@ -1031,6 +1031,19 @@ function attachmentNames(links) {
 function materialDisplayName(id) {
   const m = state.materials.find(x => x.id === id); return m ? m.name : id;
 }
+function materialPickerName(m) {
+  if (!m) return '';
+  if (m.category === 'Antibody') {
+    const parts = [];
+    if (m.abConjugate) parts.push(m.abConjugate);
+    if (m.abClone) parts.push('clone ' + m.abClone);
+    if (m.company) parts.push(m.company);
+    if (!parts.length && m.catalog) parts.push('Cat# ' + m.catalog);
+    const suffix = parts.slice(0, 3).join(' · ');
+    return suffix ? `${m.name} — ${suffix}` : m.name;
+  }
+  return m.name;
+}
 function tissueDisplayName(id) {
   const t = state.tissues.find(x => x.id === id); return t ? t.name : id;
 }
@@ -2398,7 +2411,7 @@ function expItemFromValue(value) {
   const id = parts.slice(1).join(':');
   if (type === 'material') {
     const m = state.materials.find(x => x.id === id); if (!m) return null;
-    return { type, id, name: m.name, unit: m.category === 'Primer' ? 'µL' : (m.unit || 'units'), amount: 0 };
+    return { type, id, name: materialPickerName(m), unit: m.category === 'Primer' ? 'µL' : (m.unit || 'units'), amount: 0 };
   }
   if (type === 'tissue') {
     const t = state.tissues.find(x => x.id === id); if (!t) return null;
@@ -3726,7 +3739,8 @@ function renderLog() {
 
 // ── User filters ──────────────────────────────────────────────────────────────
 function updateUserFilters() {
-  const users = [...new Set(state.log.map(l => l.user).filter(Boolean))];
+  const users = [...new Set(state.log.map(l => l.user).filter(Boolean))]
+    .filter(u => !/\b(import|script)\b/i.test(u) && u.toLowerCase() !== 'system');
   ['proj-filter-user','exp-filter-user'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
