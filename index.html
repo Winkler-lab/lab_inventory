@@ -57,6 +57,38 @@
   .section-title { font-size: 17px; font-weight: 500; }
   .btn-add { background: var(--accent-light); color: var(--accent-text); border: 0.5px solid var(--accent); border-radius: var(--radius-sm); padding: 7px 14px; font-size: 13px; font-weight: 500; cursor: pointer; }
   .item-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 0.75rem; overflow: hidden; }
+  .item-card.reagent-code-yellow { border: 1.5px solid #d6a600; }
+  .item-card.reagent-code-yellow > .item-card-header { background: #fde68a; color: #5f4500; }
+  .item-card.reagent-code-yellow > .item-card-body { background: #fffbeb; color: #3f3100; }
+  .item-card.reagent-code-orange { border: 1.5px solid #d96800; }
+  .item-card.reagent-code-orange > .item-card-header { background: #fdba74; color: #6f2f00; }
+  .item-card.reagent-code-orange > .item-card-body { background: #fff7ed; color: #542500; }
+  .item-card.reagent-code-red { border: 1.5px solid #c62828; }
+  .item-card.reagent-code-red > .item-card-header { background: #fca5a5; color: #6f1010; }
+  .item-card.reagent-code-red > .item-card-body { background: #fef2f2; color: #571010; }
+  .item-card.reagent-code-yellow .item-card-meta,
+  .item-card.reagent-code-orange .item-card-meta,
+  .item-card.reagent-code-red .item-card-meta { color: currentColor; opacity: 0.78; }
+  .reagent-code-chip { display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border:1px solid rgba(0,0,0,.18);vertical-align:middle; }
+  .reagent-code-chip::before { content:'';width:8px;height:8px;border-radius:50%;background:currentColor; }
+  .reagent-code-chip.yellow { background:#fde68a;color:#735600; }
+  .reagent-code-chip.orange { background:#fdba74;color:#873800; }
+  .reagent-code-chip.red { background:#fca5a5;color:#821b1b; }
+  .project-material-details { display:flex;flex-wrap:wrap;gap:3px 9px;margin-top:3px;font-size:11px;color:var(--text3); }
+  .project-material-details span { white-space:nowrap; }
+  .stock-row.material-code-yellow { background:#fde68a;color:#5f4500;padding:7px 8px;border-radius:6px;border-bottom:none;margin:4px 0; }
+  .stock-row.material-code-orange { background:#fdba74;color:#6f2f00;padding:7px 8px;border-radius:6px;border-bottom:none;margin:4px 0; }
+  .stock-row.material-code-red { background:#fca5a5;color:#6f1010;padding:7px 8px;border-radius:6px;border-bottom:none;margin:4px 0; }
+  .stock-row.material-code-yellow .project-material-details,
+  .stock-row.material-code-orange .project-material-details,
+  .stock-row.material-code-red .project-material-details { color:currentColor;opacity:.8; }
+  .hazard-pictogram-list { display:flex;flex-wrap:wrap;gap:8px;margin-top:7px; }
+  .hazard-pictogram { width:74px;min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding:5px;background:#fff;border:0.5px solid rgba(0,0,0,.18);border-radius:6px;color:#111;text-align:center; }
+  .hazard-pictogram svg { width:48px;height:48px;display:block;flex:none; }
+  .hazard-pictogram span { font-size:9px;font-weight:600;line-height:1.15; }
+  .hazard-select-icon { display:inline-flex;align-items:center;justify-content:center;flex:none; }
+  .hazard-select-icon svg { width:30px;height:30px;display:block; }
+  #mat-hazard-wrap label { min-height:38px; }
   .item-card-header { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .item-card-title { font-weight: 500; font-size: 15px; }
   .item-card-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
@@ -474,6 +506,16 @@
       </div>
       <div class="field"><label>Storage location</label><input type="text" id="mat-loc" placeholder="e.g. Fridge 2 / Box A3" /></div>
       <div class="field"><label>Notes</label><textarea id="mat-notes" placeholder="Optional"></textarea></div>
+      <div class="field">
+        <label>Inventory color code (optional)</label>
+        <select id="mat-color-code">
+          <option value="">No color</option>
+          <option value="yellow">Yellow</option>
+          <option value="orange">Orange</option>
+          <option value="red">Red</option>
+        </select>
+        <div style="font-size:11px;color:var(--text3);line-height:1.4">The material card will be highlighted with this color. This also works for kits.</div>
+      </div>
 
       <!-- Reagent-specific fields -->
       <div id="reagent-fields" style="display:none;flex-direction:column;gap:12px">
@@ -493,7 +535,7 @@
           <div class="field"><label>Expiration date</label><input type="date" id="mat-expiry" /></div>
         </div>
         <div class="field">
-          <label>Hazard classification</label>
+          <label>Hazard classification / pictograms</label>
           <div id="mat-hazard-wrap" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;background:var(--surface2);border:0.5px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px">
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;min-width:140px"><input type="checkbox" value="Flammable" style="width:auto"> Flammable</label>
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;min-width:140px"><input type="checkbox" value="Toxic" style="width:auto"> Toxic</label>
@@ -597,7 +639,7 @@
         </div>
         <div class="field-row">
           <div class="field"><label>Clone</label><input type="text" id="mat-ab-clone" placeholder="e.g. EPR4054" /></div>
-          <div class="field"><label>Conjugate / label (color)</label><input type="text" id="mat-ab-conjugate" placeholder="e.g. APC, FITC — blank if unconjugated" /></div>
+          <div class="field"><label>Fluorophore / conjugate / label</label><input type="text" id="mat-ab-conjugate" placeholder="e.g. APC, FITC — blank if unconjugated" /></div>
         </div>
         <div class="field-row">
           <div class="field"><label>Reactivity</label><input type="text" id="mat-ab-reactivity" placeholder="e.g. anti-mouse, anti-human" /></div>
@@ -697,6 +739,7 @@
 <div class="modal-backdrop" id="modal-add-experiment" style="display:none">
   <div class="modal">
     <div class="modal-title">New experiment</div>
+    <div id="exp-copy-notice" style="display:none;background:var(--info-light);color:var(--info);border-left:3px solid var(--info);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:9px 11px;font-size:12px;line-height:1.5;margin-bottom:12px"></div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="field"><label>Experiment title</label><input type="text" id="exp-title" placeholder="e.g. PDX14 staining panel 1" /></div>
       <div class="field-row">
@@ -1133,7 +1176,7 @@ function exportRowsFor(collection, records) {
   if (collection === 'materials' || collection === 'toorder') return records.map(m => ({
     'Name': m.name || '', 'Category': m.category || '', 'Stock': m.stock ?? '', 'Unit': m.unit || '', 'Low-stock alert at': m.lowAt ?? '', 'Location': m.location || '',
     'Company': m.company || '', 'Catalog number': m.catalog || '', 'Size': m.size || '', 'Delivery date': m.arrival || '', 'Date opened': m.opened || '', 'Expiration date': m.expiry || '',
-    'Hazards': Array.isArray(m.hazard) ? m.hazard.join('; ') : (m.hazard || ''), 'Notes': m.notes || '',
+    'Hazards': Array.isArray(m.hazard) ? m.hazard.join('; ') : (m.hazard || ''), 'Color code': m.colorCode || '', 'Notes': m.notes || '',
     'Antibody purpose': m.abPurpose || '', 'Clone': m.abClone || '', 'Conjugate': m.abConjugate || '', 'Reactivity': m.abReactivity || '', 'Host': m.abHost || '', 'Clonality': m.abClonality || '', 'Dilution': m.abDilution || '', 'Retrieval': m.abRetrieval || '', 'Validation/status': m.abStatus || '', 'Source list/panel': m.abSource || '',
     'Primer sequence': m.priSequence || '', 'Primer orientation': m.priOrientation || '', 'Primer application': m.priApplication || '', 'Stock conc. µM': m.priStockConc || '', 'Working conc. µM': m.priWorkConc || '', 'Tm °C': m.priTm || '',
     'Plasmid ID': m.plaId || '', 'Backbone': m.plaBackbone || '', 'Vector type': m.plaVectype || '', 'Insert': m.plaInsert || '', 'Promoter': m.plaPromoter || '', 'Resistance': m.plaResistance || '', 'Selection marker': m.plaSelection || '', 'Concentration': m.plaConc || '', 'AddGene ID': m.plaAddgeneId || '', 'Received from': m.plaFrom || '',
@@ -1427,7 +1470,7 @@ window.openModal = function(id) {
     populateProjectCheckboxes('proj-tissue-checkboxes', state.tissues, m => m.name + ' · ' + m.type + ' (' + m.qty + ' aliquots)');
     populateProjectCheckboxes('proj-cellline-checkboxes', state.celllines, m => m.name + ' P' + m.passage);
   }
-  if (id === 'modal-add-material') { toggleOther('mat-cat','mat-cat-other'); }
+  if (id === 'modal-add-material') { toggleOther('mat-cat','mat-cat-other'); decorateHazardCheckboxes(); }
   if (id === 'modal-add-experiment') { populateExpPerformer(); renderExpItemPicker(document.getElementById('exp-item-search')?.value || ''); }
   document.getElementById(id).style.display = 'flex';
 };
@@ -1487,7 +1530,9 @@ window.populateMaterialCheckboxes = function(searchTerm) {
   const wrap = document.getElementById('proj-material-checkboxes');
   if (state.materials.length === 0) { wrap.innerHTML = '<div style="font-size:13px;color:var(--text3)">No materials yet.</div>'; return; }
   const term = (searchTerm||'').toLowerCase();
-  const filtered = term ? state.materials.filter(m => m.name.toLowerCase().includes(term)) : state.materials;
+  const filtered = term ? state.materials.filter(m => [
+    m.name, m.category, m.abConjugate, m.abClone, m.company, m.catalog, m.abPurpose
+  ].filter(Boolean).join(' ').toLowerCase().includes(term)) : state.materials;
   if (filtered.length === 0) { wrap.innerHTML = '<div style="font-size:13px;color:var(--text3)">No materials match your search.</div>'; return; }
   // Group by category
   const byCategory = {};
@@ -1501,15 +1546,23 @@ window.populateMaterialCheckboxes = function(searchTerm) {
   wrap.innerHTML = Object.entries(byCategory).map(([cat, mats]) => `
     <div style="margin-bottom:6px">
       <div onclick="toggleMatGroup('${cat}')" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:4px 6px;background:var(--surface);border-radius:var(--radius-sm);font-size:12px;font-weight:600;color:var(--accent)">
-        <span>${cat} (${mats.length})</span>
+        <span>${escHtml(cat)} (${mats.length})</span>
         <span id="grp-chev-${cat}" style="font-size:14px;transition:transform 0.2s;transform:rotate(-90deg)">⌄</span>
       </div>
       <div id="grp-${cat}" style="display:none;flex-direction:column;gap:4px;padding:6px 4px">
         ${mats.map(m => {
           const qty = m.category === 'Primer' ? `${m.priVolume||m.stock||0} µL` : `${m.stock} ${m.unit}`;
-          return `<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:2px 4px;border-radius:4px">
-            <input type="checkbox" value="${m.id}" style="width:auto" ${checked.has(m.id)?'checked':''}>
-            <span>${m.name}</span><span style="color:var(--text3);font-size:11px">(${qty})</span>
+          const antibodyDetails = m.category === 'Antibody' ? [
+            m.abConjugate ? `Fluorophore/label: ${m.abConjugate}` : 'Fluorophore/label: unconjugated',
+            m.abClone ? `Clone: ${m.abClone}` : '',
+            m.company ? `Company: ${m.company}` : ''
+          ].filter(Boolean) : [];
+          return `<label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer;padding:6px;border-radius:4px;background:var(--surface)">
+            <input type="checkbox" value="${escHtml(m.id)}" style="width:auto;margin-top:2px" ${checked.has(m.id)?'checked':''}>
+            <span style="flex:1;min-width:0">
+              <span style="display:flex;align-items:center;justify-content:space-between;gap:8px"><strong style="font-weight:500">${escHtml(m.name)}</strong><span style="color:var(--text3);font-size:11px;white-space:nowrap">${escHtml(qty)}</span></span>
+              ${antibodyDetails.length ? `<span class="project-material-details">${antibodyDetails.map(d=>`<span>${escHtml(d)}</span>`).join('')}</span>` : ''}
+            </span>
           </label>`;
         }).join('')}
       </div>
@@ -1590,11 +1643,19 @@ window.renderProjects = function() {
     const mats = state.materials.filter(m => p.materialIds && p.materialIds.includes(m.id));
     const rows = mats.length === 0
       ? '<div style="font-size:13px;color:var(--text3)">No materials assigned.</div>'
-      : mats.map(m => `<div class="stock-row">
-          <div><div class="stock-name">${m.name}</div><div style="font-size:11px;color:var(--text3)">${m.category}</div></div>
+      : mats.map(m => {
+          const abDetails = m.category === 'Antibody' ? [
+            m.abConjugate ? `Fluorophore/label: ${m.abConjugate}` : 'Fluorophore/label: unconjugated',
+            m.abClone ? `Clone: ${m.abClone}` : '',
+            m.company ? `Company: ${m.company}` : ''
+          ].filter(Boolean) : [];
+          const rowColor = normalizedMaterialColorCode(m.colorCode);
+          return `<div class="stock-row${rowColor ? ' material-code-' + rowColor : ''}">
+          <div><div class="stock-name">${m.name}</div><div style="font-size:11px;color:var(--text3)">${m.category}</div>${abDetails.length?`<div class="project-material-details">${abDetails.map(d=>`<span>${escHtml(d)}</span>`).join('')}</div>`:''}</div>
           <div style="text-align:right"><div class="stock-qty">${m.stock} ${m.unit}</div>${stockBadge(m)}</div>
           <button class="btn-sm primary" style="font-size:12px;padding:5px 10px" onclick="openUseMaterial('${m.id}')">Use</button>
-        </div>`).join('');
+        </div>`;
+        }).join('');
     return `<div class="item-card">
       <div class="item-card-header with-select" onclick="toggleCard('proj-${p.id}')">
         ${selectionCheckbox('projects', p.id)}
@@ -1641,6 +1702,7 @@ window.addMaterial = async function() {
     arrival: document.getElementById('mat-arrival').value,
     expiry: document.getElementById('mat-expiry').value,
     notes: document.getElementById('mat-notes').value.trim(),
+    colorCode: document.getElementById('mat-color-code').value,
     // Primer fields
     priOrientation: document.getElementById('mat-pri-orientation').value,
     priApplication: document.getElementById('mat-pri-application').value==='Other'?(document.getElementById('mat-pri-application-other').value.trim()||'Other'):document.getElementById('mat-pri-application').value,
@@ -1723,6 +1785,7 @@ window.addMaterial = async function() {
    'mat-ab-source','mat-ab-link','mat-ab-arrival','mat-ab-expiry','mat-ab-purpose-new'
   ].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   document.querySelectorAll('#mat-hazard-wrap input').forEach(i => i.checked = false);
+  document.getElementById('mat-color-code').value = '';
   populateAbPurposeSelect('');
   document.getElementById('mat-drive-links').innerHTML = '';
   await markChange(`Added material "${name}"`);
@@ -1773,7 +1836,8 @@ window.renderToOrder = function() {
   const rows = items.map(m => {
     const out = (m.stock ?? 0) <= 0;
     const badge = out ? '<span class="badge badge-out">Out of stock</span>' : '<span class="badge badge-low">Low stock</span>';
-    return `<div class="item-card"><div class="item-card-header with-select">
+    const colorCode = normalizedMaterialColorCode(m.colorCode);
+    return `<div class="item-card${colorCode ? ' reagent-code-' + colorCode : ''}"><div class="item-card-header with-select">
       ${selectionCheckbox('toorder', m.id)}
       <div class="item-card-header-main"><div>
         <div class="item-card-title">${m.name} ${badge}</div>
@@ -1805,6 +1869,52 @@ function renderMatCatChips() {
     + MAT_CATEGORIES.map(c => chip(c, c, counts[c]||0)).join('');
 }
 
+function normalizedMaterialColorCode(value) {
+  const code = String(value || '').toLowerCase();
+  return ['yellow','orange','red'].includes(code) ? code : '';
+}
+
+function materialColorChip(value) {
+  const code = normalizedMaterialColorCode(value);
+  return code ? `<span class="reagent-code-chip ${code}">${escHtml(code)}</span>` : '';
+}
+
+function hazardPictogramSvg(hazard) {
+  const commonStart = '<svg viewBox="0 0 100 100" role="img" aria-hidden="true"><polygon points="50,4 96,50 50,96 4,50" fill="#fff" stroke="#d61f26" stroke-width="7"/>';
+  const commonEnd = '</svg>';
+  const symbols = {
+    'Flammable': '<path d="M51 76c-15 0-25-10-25-23 0-12 8-18 15-29 1 9 6 13 10 18 2-9 7-16 14-23 1 13 10 21 10 34 0 13-10 23-24 23zm0-8c7 0 12-5 12-12 0-6-3-10-7-15 0 7-4 11-8 15 0-5-2-9-5-13-2 5-5 8-5 13 0 7 5 12 13 12z" fill="#111"/>',
+    'Toxic': '<g fill="#111" stroke="#111" stroke-width="5" stroke-linecap="round"><line x1="28" y1="69" x2="72" y2="85"/><line x1="72" y1="69" x2="28" y2="85"/><circle cx="50" cy="43" r="20"/><rect x="40" y="57" width="20" height="14" rx="3" stroke="none"/></g><g fill="#fff"><circle cx="43" cy="40" r="5"/><circle cx="57" cy="40" r="5"/><path d="M50 47l-4 7h8z"/></g>',
+    'Corrosive': '<g fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"><path d="M22 25l22 10"/><path d="M58 24l22 10"/><path d="M31 29l-8 20"/><path d="M67 28l-8 20"/></g><g fill="#111"><path d="M21 53c6-4 11-4 16 0-4 6-11 9-17 5z"/><path d="M57 53c6-4 11-4 16 0-4 6-11 9-17 5z"/><path d="M18 72h37v7H18z"/><path d="M58 70c10-9 20-5 24 2-7 0-12 3-17 8l-12-4z"/></g>',
+    'Oxidising': '<circle cx="50" cy="65" r="14" fill="none" stroke="#111" stroke-width="6"/><path d="M50 51c-12-7-15-18-4-31 1 9 6 11 9 17 2-6 5-10 10-15 1 12 7 18 2 27-4 7-11 10-17 8z" fill="#111"/>',
+    'Irritant': '<rect x="45" y="22" width="10" height="42" rx="4" fill="#111"/><circle cx="50" cy="75" r="7" fill="#111"/>',
+    'Health hazard': '<circle cx="50" cy="28" r="11" fill="#111"/><path d="M26 79c2-24 12-35 24-35s22 11 24 35z" fill="#111"/><path d="M50 48l4 8 9-2-6 8 6 8-9-2-4 8-4-8-9 2 6-8-6-8 9 2z" fill="#fff"/>',
+    'Environmental hazard': '<g fill="#111"><rect x="31" y="33" width="6" height="39"/><path d="M34 25l-15 22h30z"/><path d="M36 38l16 13-4 4-15-10z"/><path d="M51 70c9-9 18-8 28-2-9 9-18 10-28 4l-9 5 3-9-3-8z"/></g><circle cx="70" cy="69" r="2" fill="#fff"/>',
+    'Explosive': '<g fill="#111"><circle cx="48" cy="54" r="10"/><path d="M48 18l5 23-10-1zM76 25L60 45l-6-8zM82 56l-22 3 1-10zM71 82L56 63l8-5zM35 84l6-22 9 5zM16 65l23-7 1 10zM20 33l21 13-7 7z"/></g>',
+    'Compressed gas': '<g fill="#111"><rect x="24" y="42" width="53" height="22" rx="7"/><rect x="74" y="47" width="8" height="12" rx="2"/><rect x="18" y="46" width="9" height="14" rx="2"/></g>',
+    'Radioactive': '<text x="50" y="70" text-anchor="middle" font-size="58" font-family="Arial, sans-serif" fill="#111">☢</text>'
+  };
+  return commonStart + (symbols[hazard] || '<text x="50" y="67" text-anchor="middle" font-size="48" font-family="Arial, sans-serif" fill="#111">!</text>') + commonEnd;
+}
+
+function renderHazardPictograms(hazards) {
+  const list = Array.isArray(hazards) ? hazards : (hazards ? [hazards] : []);
+  if (!list.length) return '';
+  return `<div class="hazard-pictogram-list">${list.map(h => `<div class="hazard-pictogram" title="${escHtml(h)}">${hazardPictogramSvg(h)}<span>${escHtml(h)}</span></div>`).join('')}</div>`;
+}
+
+function decorateHazardCheckboxes() {
+  document.querySelectorAll('#mat-hazard-wrap label').forEach(label => {
+    if (label.querySelector('.hazard-select-icon')) return;
+    const input = label.querySelector('input[type="checkbox"]');
+    if (!input) return;
+    const icon = document.createElement('span');
+    icon.className = 'hazard-select-icon';
+    icon.innerHTML = hazardPictogramSvg(input.value);
+    label.insertBefore(icon, input);
+  });
+}
+
 window.renderMaterials = function() {
   const el = document.getElementById('materials-list');
   if (!el) return;
@@ -1830,7 +1940,7 @@ window.renderMaterials = function() {
         m.plaId, m.plaInsert, m.plaBackbone, m.plaPromoter, m.plaResistance, m.plaSelection, m.plaAddgeneId, m.plaCelllines, m.plaVectype,
         m.priSequence, m.priOrientation, m.priApplication,
         m.abClone, m.abConjugate, m.abReactivity, m.abHost, m.abClonality, m.abSynonym, m.abStatus, m.abSource, m.abPurpose,
-        Array.isArray(m.hazard) ? m.hazard.join(' ') : m.hazard
+        Array.isArray(m.hazard) ? m.hazard.join(' ') : m.hazard, m.colorCode
       ].filter(Boolean).join(' ').toLowerCase().includes(term));
     }
   }
@@ -1850,7 +1960,8 @@ window.renderMaterials = function() {
       `<div class="log-entry"><span class="log-desc">${l.action==='consume'?'↓ Reserved/used':l.action==='restore'?'↑ Restored':l.action==='add'?'↑ Added':'→ Moved'} ${l.action!=='relocate'?l.amount+' '+m.unit:l.note}${l.note&&l.action!=='relocate'?' — '+l.note:''}</span><span class="log-meta">${l.ts} · ${l.user}</span></div>`
     ).join('');
     const expBadge = expiryBadge(m.expiry);
-    return `<div class="item-card">
+    const colorCode = normalizedMaterialColorCode(m.colorCode);
+    return `<div class="item-card${colorCode ? ' reagent-code-' + colorCode : ''}">
       <div class="item-card-header with-select" onclick="toggleCard('mat-${m.id}')">
         ${selectionCheckbox('materials', m.id)}
         <div class="item-card-header-main">
@@ -1912,7 +2023,8 @@ window.renderMaterials = function() {
           ${m.size?`<div><span style="color:var(--text3)">Size:</span> ${m.size}</div>`:''}
           ${m.opened?`<div><span style="color:var(--text3)">Opened:</span> ${m.opened}</div>`:''}
           ${m.expiry?`<div><span style="color:var(--text3)">Expires:</span> ${m.expiry}</div>`:''}
-          ${m.hazard&&m.hazard.length?`<div style="grid-column:1/-1"><span style="color:var(--text3)">Hazard:</span> <span style="color:var(--warn);font-weight:500">${Array.isArray(m.hazard)?m.hazard.join(', '):m.hazard}</span></div>`:''}
+          ${m.colorCode?`<div style="grid-column:1/-1"><span style="color:var(--text3)">Color code:</span> ${materialColorChip(m.colorCode)}</div>`:''}
+          ${m.hazard&&m.hazard.length?`<div style="grid-column:1/-1"><span style="color:var(--text3)">Hazard pictograms:</span>${renderHazardPictograms(m.hazard)}</div>`:''}
           ${m.link?`<div style="grid-column:1/-1"><a href="${m.link}" target="_blank" style="color:var(--accent);font-size:12px">🔗 Product datasheet</a></div>`:''}
         </div>` : ''}
         ${logs ? `<div style="margin-bottom:10px"><div class="exp-section-label">Recent activity</div>${logs}</div>` : ''}
@@ -3119,6 +3231,10 @@ async function commitExperimentReservation(expData, previousReservedItems, { del
 }
 
 function resetExperimentModal() {
+  const modalTitle = document.querySelector('#modal-add-experiment .modal-title');
+  if (modalTitle) modalTitle.textContent = 'New experiment';
+  const copyNotice = document.getElementById('exp-copy-notice');
+  if (copyNotice) { copyNotice.style.display = 'none'; copyNotice.textContent = ''; }
   ['exp-title','exp-date','exp-user','exp-aim','exp-notes','exp-item-search'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   ['exp-protocol','exp-result','exp-next'].forEach(id => window.rteClear(id));
   document.getElementById('exp-material-rows').innerHTML = '';
@@ -3174,6 +3290,41 @@ window.openNewExperiment = function() {
   openModal('modal-add-experiment');
 };
 
+window.duplicateExperiment = function(id) {
+  const source = state.experiments.find(x => x.id === id);
+  if (!source) { alert('Experiment not found.'); return; }
+  pendingExperimentFinalization = null;
+  document.getElementById('modal-experiment-review').style.display = 'none';
+  resetExperimentModal();
+
+  const modalTitle = document.querySelector('#modal-add-experiment .modal-title');
+  if (modalTitle) modalTitle.textContent = 'Repeat experiment';
+  const notice = document.getElementById('exp-copy-notice');
+  if (notice) {
+    notice.style.display = 'block';
+    notice.textContent = `Template copied from “${source.title}”. Results, next steps, date, and attachments were cleared. Inventory stock will only be reserved when this new draft is saved.`;
+  }
+
+  document.getElementById('exp-title').value = `${source.title || 'Experiment'} — repeat`;
+  document.getElementById('exp-date').valueAsDate = new Date();
+  document.getElementById('exp-user').value = currentUser || source.user || '';
+  document.getElementById('exp-aim').value = source.aim || '';
+  document.getElementById('exp-notes').value = source.notes || '';
+  window.rteSet('exp-protocol', source.protocol || '');
+  window.rteClear('exp-result');
+  window.rteClear('exp-next');
+  populateExpProjectSelect();
+  document.getElementById('exp-project').value = source.projectId || '';
+  loadExpItemRows(expItems(source).map(item => ({ ...item })));
+  document.getElementById('exp-drive-links').innerHTML = '';
+  pendingFiles['exp-drive-links'] = [];
+
+  const btn = document.querySelector('#modal-add-experiment .btn-primary');
+  btn.textContent = 'Save repeated experiment as draft';
+  btn.onclick = window.addExperiment;
+  openModal('modal-add-experiment');
+};
+
 window.renderExperiments = function() {
   const el = document.getElementById('experiments-list');
   if (!el) return;
@@ -3222,6 +3373,7 @@ window.renderExperiments = function() {
         <div class="action-row">
           ${status !== 'final' ? `<button class="btn-sm" style="background:var(--accent);color:#fff" onclick="finalizeExperiment('${escHtml(e.id)}')">Finalize</button>` : ''}
           <button class="btn-sm primary" onclick="printExperimentRecord('${escHtml(e.id)}')">Print / Save PDF</button>
+          <button class="btn-sm" onclick="duplicateExperiment('${escHtml(e.id)}')" title="Create a new draft from this experiment setup">Repeat / duplicate</button>
           <button class="btn-sm" onclick="editExperiment('${escHtml(e.id)}')">Edit</button>
           <button class="btn-sm danger" onclick="deleteExperiment('${escHtml(e.id)}')">Delete</button>
         </div>
@@ -3446,6 +3598,8 @@ window.editMaterial = function(id) {
   document.getElementById('mat-arrival').value = m.arrival||'';
   document.getElementById('mat-expiry').value = m.expiry||'';
   document.getElementById('mat-notes').value = m.notes||'';
+  document.getElementById('mat-color-code').value = normalizedMaterialColorCode(m.colorCode);
+  document.querySelectorAll('#mat-hazard-wrap input').forEach(i => i.checked = false);
   // Trigger category-specific fields
   toggleOther('mat-cat','mat-cat-other');
   if (m.category === 'Reagent') {
@@ -3525,6 +3679,7 @@ window.editMaterial = function(id) {
     m.arrival = document.getElementById('mat-arrival').value;
     m.expiry = document.getElementById('mat-expiry').value;
     m.notes = document.getElementById('mat-notes').value.trim();
+    m.colorCode = document.getElementById('mat-color-code').value;
     if (cat === 'Reagent') {
       m.company = document.getElementById('mat-company').value.trim();
       m.catalog = document.getElementById('mat-catalog').value.trim();
