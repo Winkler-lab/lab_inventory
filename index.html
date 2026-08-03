@@ -313,7 +313,7 @@
   <div class="tab-content" id="tab-materials">
     <div class="section-header">
       <div class="section-title">Materials</div>
-      <button class="btn-add" onclick="openModal('modal-add-material')">＋ Add material</button>
+      <button class="btn-add" onclick="openNewMaterial()">＋ Add material</button>
     </div>
     <div class="filter-bar">
       <input type="search" id="mat-search" placeholder="Search name, company, catalog, location, sequence…" oninput="renderMaterials()" style="flex:1;min-width:180px" />
@@ -484,6 +484,7 @@
 <div class="modal-backdrop" id="modal-add-material" style="display:none">
   <div class="modal">
     <div class="modal-title">Add material</div>
+    <div id="mat-copy-notice" style="display:none;background:var(--info-light);color:var(--info);border-left:3px solid var(--info);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:9px 11px;font-size:12px;line-height:1.5;margin-bottom:12px"></div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="field"><label>Name</label><input type="text" id="mat-name" placeholder="e.g. Anti-CD3 antibody" /></div>
       <div class="field-row">
@@ -1524,6 +1525,7 @@ window.closeModal = function(id) {
     const wrap = document.getElementById(cid);
     if (wrap) wrap.querySelectorAll('.pending-file-row').forEach(el => el.remove());
   }
+  if (id === 'modal-add-material') resetMaterialForm();
 };
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -1715,6 +1717,172 @@ window.renderProjects = function() {
 }
 
 // ── Materials ─────────────────────────────────────────────────────────────────
+const STANDARD_MATERIAL_CATEGORIES = new Set(['Antibody','Reagent','Kit','Medium','Plastics','Primer','Plasmid','Other']);
+
+function setMaterialField(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value ?? '';
+}
+
+function resetMaterialForm() {
+  const modal = document.getElementById('modal-add-material');
+  if (!modal) return;
+
+  modal.querySelectorAll('input, textarea, select').forEach(el => {
+    if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+    else if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+
+  const otherFields = ['mat-cat-other','mat-pri-application-other','mat-pla-vectype-other','mat-ab-purpose-new'];
+  otherFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.style.display = 'none'; }
+  });
+
+  pendingFiles['mat-drive-links'] = [];
+  const driveWrap = document.getElementById('mat-drive-links');
+  if (driveWrap) driveWrap.innerHTML = '';
+
+  populateAbPurposeSelect('');
+  toggleOther('mat-cat','mat-cat-other');
+  decorateHazardCheckboxes();
+
+  const title = modal.querySelector('.modal-title');
+  if (title) title.textContent = 'Add material';
+  const notice = document.getElementById('mat-copy-notice');
+  if (notice) { notice.style.display = 'none'; notice.textContent = ''; }
+  const btn = modal.querySelector('.modal-footer .btn-primary');
+  if (btn) {
+    btn.textContent = 'Add to inventory';
+    btn.onclick = window.addMaterial;
+  }
+}
+
+function populateMaterialFormFromRecord(m) {
+  const category = m.category || 'Antibody';
+  if (STANDARD_MATERIAL_CATEGORIES.has(category)) {
+    setMaterialField('mat-cat', category);
+    setMaterialField('mat-cat-other', '');
+  } else {
+    setMaterialField('mat-cat', 'Other');
+    setMaterialField('mat-cat-other', category);
+  }
+
+  setMaterialField('mat-name', m.name);
+  setMaterialField('mat-stock', m.stock);
+  setMaterialField('mat-unit', m.unit);
+  setMaterialField('mat-low', m.lowAt);
+  setMaterialField('mat-loc', m.location);
+  setMaterialField('mat-arrival', m.arrival);
+  setMaterialField('mat-expiry', m.expiry);
+  setMaterialField('mat-notes', m.notes);
+  setMaterialField('mat-color-code', normalizedMaterialColorCode(m.colorCode));
+
+  // Reagent/general supplier fields. These are also retained for kits and custom categories.
+  setMaterialField('mat-company', m.company);
+  setMaterialField('mat-catalog', m.catalog);
+  setMaterialField('mat-size', m.size);
+  setMaterialField('mat-opened', m.opened);
+  setMaterialField('mat-link', m.link);
+  document.querySelectorAll('#mat-hazard-wrap input').forEach(i => i.checked = false);
+  (Array.isArray(m.hazard) ? m.hazard : (m.hazard ? [m.hazard] : [])).forEach(h => {
+    const cb = [...document.querySelectorAll('#mat-hazard-wrap input')].find(input => input.value === h);
+    if (cb) cb.checked = true;
+  });
+
+  // Primer fields.
+  setMaterialField('mat-pri-orientation', m.priOrientation || 'Forward');
+  const primerApplications = [...document.getElementById('mat-pri-application').options].map(o => o.value);
+  if (m.priApplication && !primerApplications.includes(m.priApplication)) {
+    setMaterialField('mat-pri-application', 'Other');
+    setMaterialField('mat-pri-application-other', m.priApplication);
+  } else {
+    setMaterialField('mat-pri-application', m.priApplication || 'PCR');
+  }
+  setMaterialField('mat-pri-sequence', m.priSequence);
+  setMaterialField('mat-pri-stock-conc', m.priStockConc);
+  setMaterialField('mat-pri-work-conc', m.priWorkConc);
+  setMaterialField('mat-pri-tm', m.priTm);
+  setMaterialField('mat-pri-volume', m.priVolume);
+  setMaterialField('mat-pri-low', m.priLowAt);
+
+  // Plasmid fields.
+  setMaterialField('mat-pla-id', m.plaId);
+  setMaterialField('mat-pla-backbone', m.plaBackbone);
+  const vectorTypes = [...document.getElementById('mat-pla-vectype').options].map(o => o.value);
+  if (m.plaVectype && !vectorTypes.includes(m.plaVectype)) {
+    setMaterialField('mat-pla-vectype', 'Other');
+    setMaterialField('mat-pla-vectype-other', m.plaVectype);
+  } else {
+    setMaterialField('mat-pla-vectype', m.plaVectype);
+  }
+  setMaterialField('mat-pla-insert', m.plaInsert);
+  setMaterialField('mat-pla-insert-size', m.plaInsertSize);
+  setMaterialField('mat-pla-promoter', m.plaPromoter);
+  setMaterialField('mat-pla-resistance', m.plaResistance);
+  setMaterialField('mat-pla-selection', m.plaSelection);
+  setMaterialField('mat-pla-conc', m.plaConc);
+  setMaterialField('mat-pla-addgene-id', m.plaAddgeneId);
+  setMaterialField('mat-pla-from', m.plaFrom);
+  setMaterialField('mat-pla-link-addgene', m.plaLinkAddgene);
+  setMaterialField('mat-pla-link-benchling', m.plaLinkBenchling);
+  setMaterialField('mat-pla-celllines', m.plaCelllines);
+
+  // Antibody fields.
+  setMaterialField('mat-ab-company', m.company);
+  setMaterialField('mat-ab-catalog', m.catalog);
+  setMaterialField('mat-ab-link', m.link);
+  setMaterialField('mat-ab-arrival', m.arrival);
+  setMaterialField('mat-ab-expiry', m.expiry);
+  setMaterialField('mat-ab-clone', m.abClone);
+  setMaterialField('mat-ab-conjugate', m.abConjugate);
+  setMaterialField('mat-ab-reactivity', m.abReactivity);
+  setMaterialField('mat-ab-host', m.abHost);
+  setMaterialField('mat-ab-clonality', m.abClonality);
+  setMaterialField('mat-ab-synonym', m.abSynonym);
+  setMaterialField('mat-ab-retrieval', m.abRetrieval);
+  setMaterialField('mat-ab-dilution', m.abDilution);
+  setMaterialField('mat-ab-lot', m.abLot);
+  setMaterialField('mat-ab-status', m.abStatus);
+  setMaterialField('mat-ab-source', m.abSource);
+  populateAbPurposeSelect(m.abPurpose || '');
+
+  toggleOther('mat-cat','mat-cat-other');
+  toggleOther('mat-pri-application','mat-pri-application-other');
+  toggleOther('mat-pla-vectype','mat-pla-vectype-other');
+  decorateHazardCheckboxes();
+}
+
+window.openNewMaterial = function() {
+  resetMaterialForm();
+  openModal('modal-add-material');
+  document.getElementById('mat-name')?.focus();
+};
+
+window.replicateMaterial = function(id) {
+  const source = state.materials.find(x => x.id === id);
+  if (!source) return;
+  resetMaterialForm();
+  populateMaterialFormFromRecord(source);
+
+  const modal = document.getElementById('modal-add-material');
+  const title = modal?.querySelector('.modal-title');
+  if (title) title.textContent = 'Replicate material';
+  const notice = document.getElementById('mat-copy-notice');
+  if (notice) {
+    notice.style.display = 'block';
+    notice.textContent = `Creating a new inventory entry from “${source.name}”. Change the field or fields that are different, then save.`;
+  }
+  const btn = modal?.querySelector('.modal-footer .btn-primary');
+  if (btn) {
+    btn.textContent = 'Add replicated material';
+    btn.onclick = window.addMaterial;
+  }
+  openModal('modal-add-material');
+  document.getElementById('mat-name')?.focus();
+};
+
 window.addMaterial = async function() {
   const name = document.getElementById('mat-name').value.trim();
   if (!name) { document.getElementById('mat-name').focus(); return; }
@@ -1798,29 +1966,6 @@ window.addMaterial = async function() {
   mat.driveLinks = await uploadPendingFiles('mat-drive-links', 'materials/' + mat.id);
   await saveDoc('materials', mat.id, mat);
   closeModal('modal-add-material');
-  ['mat-name','mat-stock','mat-unit','mat-low','mat-loc','mat-arrival','mat-expiry','mat-notes','mat-company','mat-catalog','mat-size','mat-opened','mat-link','mat-pri-volume','mat-pri-low'].forEach(id => document.getElementById(id).value = '');
-  const sRow = document.getElementById('mat-stock-unit-row'); if(sRow) sRow.style.display='grid';
-  const lRow = document.getElementById('mat-low-row'); if(lRow) lRow.style.display='block';
-  document.getElementById('mat-cat-other').style.display = 'none';
-  document.getElementById('mat-cat-other').value = '';
-  document.getElementById('reagent-fields').style.display = 'none';
-  document.getElementById('primer-fields').style.display = 'none';
-  document.getElementById('plasmid-fields').style.display = 'none';
-  { const abf=document.getElementById('antibody-fields'); if(abf) abf.style.display='none'; }
-  ['mat-company','mat-catalog','mat-size','mat-opened','mat-link',
-   'mat-pri-sequence','mat-pri-stock-conc','mat-pri-work-conc','mat-pri-tm',
-   'mat-pla-id','mat-pla-backbone','mat-pla-insert','mat-pla-insert-size',
-   'mat-pla-promoter','mat-pla-resistance','mat-pla-addgene-id','mat-pla-from',
-   'mat-pla-link-addgene','mat-pla-link-benchling','mat-pla-celllines',
-   'mat-pri-application-other','mat-pla-vectype-other',
-   'mat-ab-clone','mat-ab-conjugate','mat-ab-reactivity','mat-ab-catalog','mat-ab-company','mat-ab-lot',
-   'mat-ab-host','mat-ab-clonality','mat-ab-synonym','mat-ab-dilution','mat-ab-retrieval','mat-ab-status',
-   'mat-ab-source','mat-ab-link','mat-ab-arrival','mat-ab-expiry','mat-ab-purpose-new'
-  ].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
-  document.querySelectorAll('#mat-hazard-wrap input').forEach(i => i.checked = false);
-  document.getElementById('mat-color-code').value = '';
-  populateAbPurposeSelect('');
-  document.getElementById('mat-drive-links').innerHTML = '';
   await markChange(`Added material "${name}"`);
 };
 
@@ -2064,6 +2209,7 @@ window.renderMaterials = function() {
         ${renderDriveLinks(m.driveLinks, {collection:'materials', docId:m.id})}
         <div class="action-row">
           <button class="btn-sm primary" onclick="openUseMaterial('${m.id}')">Update stock</button>
+          <button class="btn-sm" onclick="replicateMaterial('${m.id}')">Replicate</button>
           <button class="btn-sm" onclick="editMaterial('${m.id}')">Edit</button>
           <button class="btn-sm danger" onclick="deleteMaterial('${m.id}')">Remove</button>
         </div>
@@ -3693,76 +3839,11 @@ window.renderPDXModels = function() {
 window.editMaterial = function(id) {
   const m = state.materials.find(x => x.id === id);
   if (!m) return;
-  // Pre-fill form
-  document.getElementById('mat-name').value = m.name||'';
-  document.getElementById('mat-cat').value = m.category||'Antibody';
-  document.getElementById('mat-stock').value = m.stock||'';
-  document.getElementById('mat-unit').value = m.unit||'';
-  document.getElementById('mat-low').value = m.lowAt||'';
-  document.getElementById('mat-loc').value = m.location||'';
-  document.getElementById('mat-arrival').value = m.arrival||'';
-  document.getElementById('mat-expiry').value = m.expiry||'';
-  document.getElementById('mat-notes').value = m.notes||'';
-  document.getElementById('mat-color-code').value = normalizedMaterialColorCode(m.colorCode);
-  document.querySelectorAll('#mat-hazard-wrap input').forEach(i => i.checked = false);
-  // Trigger category-specific fields
-  toggleOther('mat-cat','mat-cat-other');
-  if (m.category === 'Reagent') {
-    document.getElementById('mat-company').value = m.company||'';
-    document.getElementById('mat-catalog').value = m.catalog||'';
-    document.getElementById('mat-size').value = m.size||'';
-    document.getElementById('mat-opened').value = m.opened||'';
-    document.getElementById('mat-link').value = m.link||'';
-    if (m.hazard) (Array.isArray(m.hazard)?m.hazard:[m.hazard]).forEach(h => {
-      const cb = document.querySelector(`#mat-hazard-wrap input[value="${h}"]`);
-      if (cb) cb.checked = true;
-    });
-  }
-  if (m.category === 'Primer') {
-    document.getElementById('mat-pri-orientation').value = m.priOrientation||'Forward';
-    document.getElementById('mat-pri-application').value = m.priApplication||'PCR';
-    document.getElementById('mat-pri-sequence').value = m.priSequence||'';
-    document.getElementById('mat-pri-stock-conc').value = m.priStockConc||'';
-    document.getElementById('mat-pri-work-conc').value = m.priWorkConc||'';
-    document.getElementById('mat-pri-tm').value = m.priTm||'';
-    document.getElementById('mat-pri-volume').value = m.priVolume||'';
-    document.getElementById('mat-pri-low').value = m.priLowAt||'';
-  }
-  if (m.category === 'Plasmid') {
-    document.getElementById('mat-pla-id').value = m.plaId||'';
-    document.getElementById('mat-pla-backbone').value = m.plaBackbone||'';
-    document.getElementById('mat-pla-vectype').value = m.plaVectype||'';
-    document.getElementById('mat-pla-insert').value = m.plaInsert||'';
-    document.getElementById('mat-pla-insert-size').value = m.plaInsertSize||'';
-    document.getElementById('mat-pla-promoter').value = m.plaPromoter||'';
-    document.getElementById('mat-pla-resistance').value = m.plaResistance||'';
-    document.getElementById('mat-pla-selection').value = m.plaSelection||'';
-    document.getElementById('mat-pla-conc').value = m.plaConc||'';
-    document.getElementById('mat-pla-addgene-id').value = m.plaAddgeneId||'';
-    document.getElementById('mat-pla-from').value = m.plaFrom||'';
-    document.getElementById('mat-pla-link-addgene').value = m.plaLinkAddgene||'';
-    document.getElementById('mat-pla-link-benchling').value = m.plaLinkBenchling||'';
-    document.getElementById('mat-pla-celllines').value = m.plaCelllines||'';
-  }
-  if (m.category === 'Antibody') {
-    document.getElementById('mat-ab-company').value = m.company||'';
-    document.getElementById('mat-ab-catalog').value = m.catalog||'';
-    document.getElementById('mat-ab-link').value = m.link||'';
-    document.getElementById('mat-ab-arrival').value = m.arrival||'';
-    document.getElementById('mat-ab-expiry').value = m.expiry||'';
-    document.getElementById('mat-ab-clone').value = m.abClone||'';
-    document.getElementById('mat-ab-conjugate').value = m.abConjugate||'';
-    document.getElementById('mat-ab-reactivity').value = m.abReactivity||'';
-    document.getElementById('mat-ab-host').value = m.abHost||'';
-    document.getElementById('mat-ab-clonality').value = m.abClonality||'';
-    document.getElementById('mat-ab-synonym').value = m.abSynonym||'';
-    document.getElementById('mat-ab-retrieval').value = m.abRetrieval||'';
-    document.getElementById('mat-ab-dilution').value = m.abDilution||'';
-    document.getElementById('mat-ab-lot').value = m.abLot||'';
-    document.getElementById('mat-ab-status').value = m.abStatus||'';
-    document.getElementById('mat-ab-source').value = m.abSource||'';
-    populateAbPurposeSelect(m.abPurpose||'');
-  }
+  resetMaterialForm();
+  populateMaterialFormFromRecord(m);
+  const modal = document.getElementById('modal-add-material');
+  const title = modal?.querySelector('.modal-title');
+  if (title) title.textContent = 'Edit material';
   openModal('modal-add-material');
   const btn = document.querySelector('#modal-add-material .btn-primary');
   btn.textContent = 'Save changes';
