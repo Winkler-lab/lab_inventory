@@ -88,6 +88,11 @@
   .hazard-pictogram span { font-size:9px;font-weight:600;line-height:1.15; }
   .hazard-select-icon { display:inline-flex;align-items:center;justify-content:center;flex:none; }
   .hazard-select-icon svg { width:30px;height:30px;display:block; }
+  .hazard-inline { display:inline-flex;align-items:center;gap:2px;vertical-align:middle;margin-left:4px; }
+  .hazard-inline svg { width:22px;height:22px;display:block;background:#fff;border-radius:3px; }
+  .bm-list { display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto;background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px; }
+  .bm-row { display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 6px;background:var(--surface);border-radius:4px;cursor:pointer; }
+  .bm-row input { width:auto;accent-color:var(--accent); }
   #mat-hazard-wrap label { min-height:38px; }
   .item-card-header { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .item-card-title { font-weight: 500; font-size: 15px; }
@@ -342,7 +347,10 @@
   <div class="tab-content" id="tab-materials">
     <div class="section-header">
       <div class="section-title">Materials</div>
-      <button class="btn-add" onclick="openNewMaterial()">＋ Add material</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-add" style="background:var(--surface2);color:var(--text2);border-color:var(--border-strong)" onclick="openBatchMove()">⇄ Batch move</button>
+        <button class="btn-add" onclick="openNewMaterial()">＋ Add material</button>
+      </div>
     </div>
     <div class="filter-bar">
       <input type="search" id="mat-search" placeholder="Search name, company, catalog, location, sequence…" oninput="renderMaterials()" style="flex:1;min-width:180px" />
@@ -893,6 +901,34 @@
   </div>
 </div>
 
+<!-- MODAL: BATCH MOVE MATERIALS -->
+<div class="modal-backdrop center" id="modal-batch-move" style="display:none">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title">Batch move materials</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:12px;color:var(--text3);line-height:1.5">Pick the current location. All materials stored there are listed below. Untick any that did not move, type the new location, then apply.</div>
+      <div class="field"><label>Current location</label>
+        <select id="bm-from" onchange="renderBatchMoveList()"></select>
+      </div>
+      <div class="field"><label>Materials to move</label>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="bm-all" checked onchange="toggleBatchMoveAll(this.checked)" style="width:auto"> Select all</label>
+          <span id="bm-count" style="margin-left:auto"></span>
+        </div>
+        <div id="bm-list" class="bm-list"></div>
+      </div>
+      <div class="field"><label>New location</label>
+        <input type="text" id="bm-to" list="bm-to-options" placeholder="e.g. Shared room lab 475, Cabinet top" />
+        <datalist id="bm-to-options"></datalist>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-batch-move')">Cancel</button>
+      <button class="btn-primary" id="bm-apply" style="flex:2" onclick="applyBatchMove()">Move selected</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CONFIRM DELETE -->
 <div class="modal-backdrop center" id="modal-confirm" style="display:none">
   <div class="modal" style="max-width:340px">
@@ -950,7 +986,7 @@ window.rteClear = function(id) {
 };
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, runTransaction, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, runTransaction, arrayUnion, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -2219,7 +2255,7 @@ window.renderMaterials = function() {
         ${selectionCheckbox('materials', m.id)}
         <div class="item-card-header-main">
           <div>
-            <div class="item-card-title">${m.name} ${expBadge}</div>
+            <div class="item-card-title">${m.name}${renderHazardInline(m.hazard)} ${expBadge}</div>
             <div class="item-card-meta">${m.category}${m.category==='Antibody'&&m.abPurpose?' · '+m.abPurpose:''} · ${m.location||'No location'}${m.expiry?' · Exp: '+m.expiry:''}</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
@@ -2400,6 +2436,96 @@ window.toggleUseAction = function() {
   document.getElementById('use-mat-amount-wrap').style.display = action === 'relocate' ? 'none' : 'flex';
   document.getElementById('use-mat-loc-wrap').style.display = action === 'relocate' ? 'block' : 'none';
   document.getElementById('use-mat-amount-label').textContent = action === 'consume' ? 'Amount used' : 'Amount to add';
+};
+
+// ── Hazard pictograms in card header ────────────────────────────────────────
+function renderHazardInline(hazards) {
+  const list = Array.isArray(hazards) ? hazards : (hazards ? [hazards] : []);
+  if (!list.length) return '';
+  return `<span class="hazard-inline">${list.map(h => `<span title="${escHtml(h)}" aria-label="${escHtml(h)}">${hazardPictogramSvg(h)}</span>`).join('')}</span>`;
+}
+
+// ── Batch move materials ─────────────────────────────────────────────────────
+const BATCH_MOVE_SUGGESTIONS = ['Shared room lab 475, Cabinet top', 'Shared room lab 475, Cabinet down'];
+const NO_LOCATION_KEY = '__none__';
+
+function batchMoveLocationKey(m) {
+  const loc = String(m.location || '').trim();
+  return loc || NO_LOCATION_KEY;
+}
+
+window.openBatchMove = function() {
+  const counts = new Map();
+  state.materials.forEach(m => {
+    const key = batchMoveLocationKey(m);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+  const keys = [...counts.keys()].sort((a, b) => a === NO_LOCATION_KEY ? 1 : b === NO_LOCATION_KEY ? -1 : a.localeCompare(b, undefined, { numeric:true, sensitivity:'base' }));
+  const sel = document.getElementById('bm-from');
+  sel.innerHTML = '<option value="">— choose a location —</option>' + keys.map(k =>
+    `<option value="${escHtml(k)}">${k === NO_LOCATION_KEY ? '(no location set)' : escHtml(k)} — ${counts.get(k)} item(s)</option>`).join('');
+  const allLocs = [...new Set([...BATCH_MOVE_SUGGESTIONS, ...keys.filter(k => k !== NO_LOCATION_KEY)])];
+  document.getElementById('bm-to-options').innerHTML = allLocs.map(l => `<option value="${escHtml(l)}"></option>`).join('');
+  document.getElementById('bm-to').value = '';
+  document.getElementById('bm-all').checked = true;
+  renderBatchMoveList();
+  openModal('modal-batch-move');
+};
+
+window.renderBatchMoveList = function() {
+  const from = document.getElementById('bm-from').value;
+  const wrap = document.getElementById('bm-list');
+  if (!from) { wrap.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:6px">Choose a current location first.</div>'; updateBatchMoveCount(); return; }
+  const mats = state.materials.filter(m => batchMoveLocationKey(m) === from)
+    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  wrap.innerHTML = mats.map(m => `<label class="bm-row"><input type="checkbox" value="${escHtml(m.id)}" checked onchange="updateBatchMoveCount()"><span style="flex:1;min-width:0">${escHtml(m.name)}${renderHazardInline(m.hazard)}</span><span style="font-size:11px;color:var(--text3);white-space:nowrap">${escHtml(m.category || '')}</span></label>`).join('');
+  document.getElementById('bm-all').checked = true;
+  updateBatchMoveCount();
+};
+
+window.toggleBatchMoveAll = function(checked) {
+  document.querySelectorAll('#bm-list input[type=checkbox]').forEach(cb => cb.checked = checked);
+  updateBatchMoveCount();
+};
+
+function updateBatchMoveCount() {
+  const boxes = [...document.querySelectorAll('#bm-list input[type=checkbox]')];
+  const n = boxes.filter(cb => cb.checked).length;
+  document.getElementById('bm-count').textContent = boxes.length ? `${n} of ${boxes.length} selected` : '';
+  document.getElementById('bm-all').checked = boxes.length > 0 && n === boxes.length;
+}
+window.updateBatchMoveCount = updateBatchMoveCount;
+
+window.applyBatchMove = async function() {
+  const to = document.getElementById('bm-to').value.trim();
+  const ids = [...document.querySelectorAll('#bm-list input[type=checkbox]:checked')].map(cb => cb.value);
+  if (!ids.length) { alert('Select at least one material to move.'); return; }
+  if (!to) { alert('Type the new location.'); document.getElementById('bm-to').focus(); return; }
+  const btn = document.getElementById('bm-apply');
+  btn.disabled = true; btn.textContent = 'Moving…';
+  try {
+    const ts = new Date().toLocaleString();
+    const mats = ids.map(id => state.materials.find(m => String(m.id) === String(id))).filter(Boolean);
+    // Firestore batches are limited to 500 writes, so split large moves.
+    for (let i = 0; i < mats.length; i += 450) {
+      const batch = writeBatch(db);
+      mats.slice(i, i + 450).forEach(m => {
+        const log = [{ ts, user: currentUser, action: 'relocate', note: to }, ...(m.log || [])].slice(0, 50);
+        batch.set(doc(db, 'materials', resolveFirestoreDocId('materials', m.id, m)), { location: to, log }, { merge: true });
+      });
+      await batch.commit();
+    }
+    const fromSel = document.getElementById('bm-from');
+    const fromLabel = fromSel.value === NO_LOCATION_KEY ? '(no location)' : fromSel.value;
+    closeModal('modal-batch-move');
+    await markChange(`Batch moved ${mats.length} material(s) from "${fromLabel}" to "${to}"`);
+    showToast(`Moved ${mats.length} material(s) ✓`);
+  } catch (err) {
+    console.error(err);
+    showUploadError('Batch move failed: ' + (err.message || 'unknown error'));
+  } finally {
+    btn.disabled = false; btn.textContent = 'Move selected';
+  }
 };
 
 window.applyMaterialAction = async function() {
